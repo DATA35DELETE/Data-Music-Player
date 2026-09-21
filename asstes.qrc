@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/medyaKontrol">
+        <file>assets/medyaKontrol/duraklatma.png</file>
+        <file>assets/medyaKontrol/baslatma.png</file>
+        <file>assets/medyaKontrol/sesSeviyesi.png</file>
+        <file>assets/medyaKontrol/dongu.png</file>
+        <file>assets/medyaKontrol/karisik.png</file>
+        <file>assets/medyaKontrol/tekrar.png</file>
+        <file>assets/medyaKontrol/NoMedia.png</file>
+        <file>assets/medyaKontrol/arama.png</file>
+        <file>assets/medyaKontrol/yenile.png</file>
+    </qresource>
+</RCC>
