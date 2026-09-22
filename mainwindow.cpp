@@ -32,6 +32,7 @@ ui(new Ui::MainWindow) {
     mw2 = this;
 
     oynatmaListesiCreate = new oynatmaListesiOlusturma;
+    oynatmaListesiDelete = new oynatmaListesiSilme;
 
     oynatici = new QMediaPlayer;
     cikis = new QAudioOutput;
@@ -192,6 +193,7 @@ ui(new Ui::MainWindow) {
     connect(oynatmaListeleri, &QPushButton::clicked, this, &MainWindow::oynatmaListeleri_clicked);
     connect(ui->playlistsArama, &QLineEdit::textChanged, this, &MainWindow::medyaArama_textChanged);
     connect(ui->actionEkle, &QAction::triggered, this, [this](){this->setVisible(false); oynatmaListesiCreate->oynatmaListesiOlusturmaBaslangic();});
+    connect(ui->actionKald_r, &QAction::triggered, this, [this](){this->setVisible(false); oynatmaListesiDelete->oynatmaListesiSilmeBaslangic();});
 }
 
 MainWindow::~MainWindow()
@@ -248,7 +250,41 @@ void MainWindow::medyalariListele()
         }
     }
 
-    oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(medyalar.at(0)).replace("../musics\\","../musics/")));
+    int gecmisMedyaSayisi = 0;
+
+    QFile iniFile("../info.ini");
+    if(iniFile.open(QFile::OpenModeFlag::ReadOnly))
+    {
+        QTextStream st(&iniFile);
+        st.setEncoding(QStringConverter::Utf8);
+
+        gecmisMedyaSayisi = st.readLine().toInt();
+
+        iniFile.close();
+    }
+
+    if(medyalarZamanCount == gecmisMedyaSayisi)
+    {
+        oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(medyalar.at(0)).replace("../musics\\","../musics/")));
+    }
+    else
+    {
+        QFile iniFile2("../info.ini");
+
+        if(iniFile2.open(QFile::OpenModeFlag::WriteOnly))
+        {
+            iniFile2.write(QString::number(medyalarZamanCount).toStdString().c_str());
+
+            iniFile2.close();
+        }
+
+        for (auto i : std::filesystem::directory_iterator("../thumbnails/")) {
+            QFile::remove(i.path());
+        }
+
+        oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(medyalar.at(0)).replace("../musics\\","../musics/")));
+    }
+
 }
 
 void MainWindow::medyaSlider_positionChanged(qint64 deger)
@@ -964,6 +1000,13 @@ void MainWindow::medyalariListele(std::wstring playlistsName)
 }
 
 void oynatmaListesiOlusturma::oynatmaListesiOlusturmaBitis()
+{
+    mw2->oynatmaListeleri_clicked();
+
+    mw2->setVisible(true);
+}
+
+void oynatmaListesiSilme::oynatmaListesiSilmeBitis()
 {
     mw2->oynatmaListeleri_clicked();
 

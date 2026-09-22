@@ -26,6 +26,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ${PROJECT_SOURCES}
         asstes.qrc
         oynatmalistesiolusturma.h oynatmalistesiolusturma.cpp oynatmalistesiolusturma.ui
+        oynatmalistesisilme.h oynatmalistesisilme.cpp oynatmalistesisilme.ui
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET dataMusicPlayer APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

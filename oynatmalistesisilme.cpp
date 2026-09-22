@@ -1,7 +1,7 @@
 #include "oynatmalistesisilme.h"
 #include "ui_oynatmalistesisilme.h"
 
-QVector<std::wstring> seciliMedyalar;
+QVector<std::wstring> seciliMedyalar2;
 
 oynatmaListesiSilme::oynatmaListesiSilme(QWidget *parent)
     : QMainWindow(parent)
@@ -26,9 +26,9 @@ void oynatmaListesiSilme::oynatmaListesiSilmeBaslangic()
     std::vector<long long> medyalarZaman;
     int medyalarZamanCount = 0;
 
-    QVector<std::wstring> medyalar;
+    QVector<std::wstring> medyalar2;
 
-    for(auto i: std::filesystem::directory_iterator("../playlists"))
+    for(auto i: std::filesystem::directory_iterator("../playlists/"))
     {
         medyalarZaman.emplace_back(i.last_write_time().time_since_epoch().count());
 
@@ -39,17 +39,17 @@ void oynatmaListesiSilme::oynatmaListesiSilmeBaslangic()
 
     for(auto i: medyalarZaman)
     {
-        for (auto ii : std::filesystem::directory_iterator("../playlists")) {
+        for (auto ii : std::filesystem::directory_iterator("../playlists/")) {
             if(i == ii.last_write_time().time_since_epoch().count())
             {
-                medyalar.append(QString(ii.path().c_str()).toStdWString());
+                medyalar2.append(QString(ii.path().c_str()).toStdWString());
 
                 break;
             }
         }
     }
 
-    for(auto i: medyalar)
+    for(auto i: medyalar2)
     {
         QWidget *anaWidget = new QWidget(this);
         QHBoxLayout *anaLayout = new QHBoxLayout(anaWidget);
@@ -60,11 +60,11 @@ void oynatmaListesiSilme::oynatmaListesiSilmeBaslangic()
                 {
                     if(deger == Qt::CheckState::Checked)
                     {
-                        seciliMedyalar.append(i);
+                        seciliMedyalar2.append(i);
                     }
                     else if(deger == Qt::CheckState::Unchecked)
                     {
-                        seciliMedyalar.remove(std::distance(seciliMedyalar.begin() ,std::find(seciliMedyalar.begin(), seciliMedyalar.end(), i)));
+                        seciliMedyalar2.remove(std::distance(seciliMedyalar2.begin() ,std::find(seciliMedyalar2.begin(), seciliMedyalar2.end(), i)));
                     }
                 });
         anaLayout->addWidget(check);
@@ -81,9 +81,9 @@ void oynatmaListesiSilme::oynatmaListesiSilmeBaslangic()
 
 void oynatmaListesiSilme::sil_clicked()
 {
-    if(!seciliMedyalar.isEmpty())
+    if(!seciliMedyalar2.isEmpty())
     {
-        for (auto i : seciliMedyalar) {
+        for (auto i : seciliMedyalar2) {
             QFile::remove(QString::fromStdWString(i));
             QFile::remove(QString::fromStdWString(i).replace("playlists", "playlistImages").replace("txt", "jpeg"));
         }

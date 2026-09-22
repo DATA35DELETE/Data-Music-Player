@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QImage>
 #include <QImageReader>
+#include <QDir>
 
 #include <filesystem>
 #include <algorithm>

@@ -361,7 +361,7 @@
     <item row="0" column="1" rowspan="2">
      <widget class="QStackedWidget" name="anaPencereleri">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="girisPage">
        <layout class="QGridLayout" name="gridLayout_5">
