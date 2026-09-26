@@ -17,6 +17,7 @@
 #include <QListWidgetItem>
 #include <QLoggingCategory>
 #include <QDirIterator>
+#include <QHotkey/QHotkey>
 
 #include <filesystem>
 #include <vector>

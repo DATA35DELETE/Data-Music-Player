@@ -133,21 +133,15 @@ ui(new Ui::MainWindow) {
     connect(ui->medyaSesSeviyesi, &QSlider::sliderMoved, this, &MainWindow::medyaSesSeviyesi_sliderMoved);
     connect(ui->medyaMod, &QPushButton::clicked, this, &MainWindow::medyaMod_clicked);
     connect(oynatici, &QMediaPlayer::mediaStatusChanged, this, &MainWindow::oynatici_mediaStatusChanged,Qt::UniqueConnection);
-    QShortcut *playPauseShortcut = new QShortcut(QKeySequence("Toggle Media Play/Pause"), this);
-    connect(playPauseShortcut, &QShortcut::activated, this, [this](){
-        if(oynatici->isPlaying())
-        {
-            ui->medyaOynatmaKontrol->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/baslatma.png"));
-            oynatici->pause();
-        }
-        else
-        {
-            ui->medyaOynatmaKontrol->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/duraklatma.png"));
-            oynatici->play();
-        }
-    });
-    QShortcut *nextShortcut = new QShortcut(QKeySequence(Qt::Key_MediaNext), this);
-    connect(nextShortcut, &QShortcut::activated, this, [this](){
+
+#if defined(Q_OS_WIN)
+    QHotkey *playPauseShortcut = new QHotkey(QHotkey::NativeShortcut{0xB3, 0}, true, this);
+#else
+    QHotkey *playPauseShortcut = new QHotkey(QHotkey::NativeShortcut{0x1008FF14, 0}, true, this);
+#endif
+    connect(playPauseShortcut, &QHotkey::activated, this, &MainWindow::medyaOynatmaKontrol_clicked);
+    QHotkey *nextShortcut = new QHotkey(QKeySequence(Qt::Key_MediaNext), true, this);
+    connect(nextShortcut, &QHotkey::activated, this, [this](){
         if(mod == 1)
         {
             mod = 0;
@@ -161,8 +155,8 @@ ui(new Ui::MainWindow) {
             medyaCal(true);
         }
     });
-    QShortcut *prevShortcut = new QShortcut(QKeySequence(Qt::Key_MediaPrevious), this);
-    connect(prevShortcut, &QShortcut::activated, this, [this](){
+    QHotkey *prevShortcut = new QHotkey(QKeySequence(Qt::Key_MediaPrevious), true, this);
+    connect(prevShortcut, &QHotkey::activated, this, [this](){
         if(mod == 1)
         {
             mod = 0;

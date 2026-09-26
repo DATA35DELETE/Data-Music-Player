@@ -51,6 +51,25 @@ endif()
 
 target_link_libraries(dataMusicPlayer PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt6::Multimedia)
 
+target_sources(dataMusicPlayer PRIVATE
+    QHotkey/qhotkey.h
+    QHotkey/qhotkey.cpp
+    QHotkey/qhotkey_p.h
+)
+
+if(WIN32)
+    target_sources(dataMusicPlayer PRIVATE QHotkey/qhotkey_win.cpp)
+elseif(APPLE)
+    target_sources(dataMusicPlayer PRIVATE QHotkey/qhotkey_mac.cpp)
+    target_link_libraries(dataMusicPlayer PRIVATE "-framework Carbon" "-framework CoreFoundation")
+elseif(UNIX AND NOT APPLE)
+    target_sources(dataMusicPlayer PRIVATE QHotkey/qhotkey_x11.cpp)
+    find_package(X11 REQUIRED)
+    target_link_libraries(dataMusicPlayer PRIVATE X11::X11)
+endif()
+
+target_include_directories(dataMusicPlayer PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/QHotkey)
+
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
