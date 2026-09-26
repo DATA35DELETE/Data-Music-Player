@@ -1,6 +1,16 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
+#ifdef WIN32
+
+#define fileSeparator "\\"
+
+#else
+
+#define fileSeparator "/"
+
+#endif
+
 QVector<std::wstring> medyalar;
 
 QVector<std::wstring> favoriMedyalar;
@@ -312,7 +322,7 @@ void MainWindow::medyalariListele()
         for (auto ii : std::filesystem::directory_iterator("../musics")) {
             if(i == ii.last_write_time().time_since_epoch().count())
             {
-                medyalar.emplace_back(ii.path());
+                medyalar.emplace_back(QString(ii.path().c_str()).toStdWString());
 
                 break;
             }
@@ -334,7 +344,7 @@ void MainWindow::medyalariListele()
 
     if(medyalarZamanCount == gecmisMedyaSayisi)
     {
-        oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(medyalar.at(0)).replace("../musics\\","../musics/")));
+        oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(medyalar.at(0)).replace("../musics" fileSeparator,"../musics/")));
     }
     else
     {
@@ -351,7 +361,7 @@ void MainWindow::medyalariListele()
             QFile::remove(i.path());
         }
 
-        oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(medyalar.at(0)).replace("../musics\\","../musics/")));
+        oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(medyalar.at(0)).replace("../musics" fileSeparator,"../musics/")));
     }
 
 }
@@ -384,15 +394,15 @@ void MainWindow::medyaSlider_positionChanged(qint64 deger)
 
             if(!isPlaylists)
             {
-                yuzenPencere->medyaYuzenIsim->setText(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics\\").remove(".mp3"));
-                yuzenPencere->setWindowTitle(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics\\").remove(".mp3"));
+                yuzenPencere->medyaYuzenIsim->setText(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3"));
+                yuzenPencere->setWindowTitle(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3"));
                 yuzenPencere->medyaYuzenSanatci->setText(QString::fromStdWString(sanacilar.at(gecerliIndex)));
                 ui->medyalar->setCurrentRow(gecerliIndex);
             }
             else
             {
-                yuzenPencere->medyaYuzenIsim->setText(QString::fromStdWString(playlistsMedyalar.at(gecerliIndex)).remove("../musics\\").remove(".mp3"));
-                yuzenPencere->setWindowTitle(QString::fromStdWString(playlistsMedyalar.at(gecerliIndex)).remove("../musics\\").remove(".mp3"));
+                yuzenPencere->medyaYuzenIsim->setText(QString::fromStdWString(playlistsMedyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3"));
+                yuzenPencere->setWindowTitle(QString::fromStdWString(playlistsMedyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3"));
                 yuzenPencere->medyaYuzenSanatci->setText(QString::fromStdWString(playlistsSanacilar.at(gecerliIndex)));
                 ui->playlistsList->setCurrentRow(gecerliIndex);
             }
@@ -539,16 +549,16 @@ void MainWindow::medyaSlider_positionChanged(qint64 deger)
 
             if(!isPlaylists)
             {
-                ui->medyaIsim->setText(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics\\").remove(".mp3"));
+                ui->medyaIsim->setText(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3"));
                 ui->medyaSanatci->setText(QString::fromStdWString(sanacilar.at(gecerliIndex)));
-                ui->statusbar->showMessage(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics\\").remove(".mp3").append(" | ").append(QString::fromStdWString(sanacilar.at(gecerliIndex))));
+                ui->statusbar->showMessage(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3").append(" | ").append(QString::fromStdWString(sanacilar.at(gecerliIndex))));
                 ui->medyalar->setCurrentRow(gecerliIndex);
             }
             else
             {
-                ui->medyaIsim->setText(QString::fromStdWString(playlistsMedyalar.at(gecerliIndex)).remove("../musics\\").remove(".mp3"));
+                ui->medyaIsim->setText(QString::fromStdWString(playlistsMedyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3"));
                 ui->medyaSanatci->setText(QString::fromStdWString(playlistsSanacilar.at(gecerliIndex)));
-                ui->statusbar->showMessage(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics\\").remove(".mp3").append(" | ").append(QString::fromStdWString(sanacilar.at(gecerliIndex))));
+                ui->statusbar->showMessage(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3").append(" | ").append(QString::fromStdWString(sanacilar.at(gecerliIndex))));
                 ui->playlistsList->setCurrentRow(gecerliIndex);
             }
         }
@@ -620,7 +630,7 @@ void MainWindow::medyaCal(bool ileriMi)
 
         if(mod == 1) isPlay = true;
 
-        oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(medyalar.at(gecerliIndex)).replace("../musics\\","../musics/")));
+        oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(medyalar.at(gecerliIndex)).replace("../musics" fileSeparator,"../musics/")));
 
         oynatici->play();
     }
@@ -661,7 +671,7 @@ void MainWindow::medyaCal(bool ileriMi)
 
         if(mod == 1) isPlay = true;
 
-        oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(playlistsMedyalar.at(gecerliIndex)).replace("../musics\\","../musics/")));
+        oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(playlistsMedyalar.at(gecerliIndex)).replace("../musics" fileSeparator,"../musics/")));
 
         oynatici->play();
     }
@@ -732,12 +742,12 @@ void MainWindow::oynatici_mediaStatusChanged(QMediaPlayer::MediaStatus status)
                 rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
 
                 rd.setScaledSize(QSize(26,26));
-                rd.read().save(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics\\","../thumbnails/").replace(".mp3", ".jpeg"));
+                rd.read().save(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../thumbnails/").replace(".mp3", ".jpeg"));
             }
             else
             {
-                QFile::remove(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics\\", "../thumbnails/").replace(".mp3", ".png"));
-                QFile::copy(":/medyaKontrol/assets/medyaKontrol/NoMedia.png", QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics\\", "../thumbnails/").replace(".mp3", ".png"));
+                QFile::remove(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator, "../thumbnails/").replace(".mp3", ".png"));
+                QFile::copy(":/medyaKontrol/assets/medyaKontrol/NoMedia.png", QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator, "../thumbnails/").replace(".mp3", ".png"));
             }
             if(!oynatici->metaData().value(QMediaMetaData::ContributingArtist).isNull())
             {
@@ -755,7 +765,7 @@ void MainWindow::oynatici_mediaStatusChanged(QMediaPlayer::MediaStatus status)
 
             if(oynaticiSayici < medyalar.count())
             {
-                oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics\\","../musics/")));
+                oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../musics/")));
             }
             else
             {
@@ -770,12 +780,12 @@ void MainWindow::oynatici_mediaStatusChanged(QMediaPlayer::MediaStatus status)
                 QImageReader rd = QImageReader("../temp.jpeg");
                 rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
                 rd.setScaledSize(QSize(26,26));
-                rd.read().save(QString::fromStdWString(playlistsMedyalar.at(oynaticiSayici)).replace("../musics\\","../playlistTumbnails/").replace(".mp3", ".jpeg"));
+                rd.read().save(QString::fromStdWString(playlistsMedyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../playlistTumbnails/").replace(".mp3", ".jpeg"));
             }
             else
             {
-                QFile::remove(QString::fromStdWString(playlistsMedyalar.at(oynaticiSayici)).replace("../musics\\", "../playlistTumbnails/").replace(".mp3", ".png"));
-                QFile::copy(":/medyaKontrol/assets/medyaKontrol/NoMedia.png", QString::fromStdWString(playlistsMedyalar.at(oynaticiSayici)).replace("../musics\\", "../playlistTumbnails/").replace(".mp3", ".png"));
+                QFile::remove(QString::fromStdWString(playlistsMedyalar.at(oynaticiSayici)).replace("../musics" fileSeparator, "../playlistTumbnails/").replace(".mp3", ".png"));
+                QFile::copy(":/medyaKontrol/assets/medyaKontrol/NoMedia.png", QString::fromStdWString(playlistsMedyalar.at(oynaticiSayici)).replace("../musics" fileSeparator, "../playlistTumbnails/").replace(".mp3", ".png"));
             }
 
             if(!oynatici->metaData().value(QMediaMetaData::ContributingArtist).isNull())
@@ -794,7 +804,7 @@ void MainWindow::oynatici_mediaStatusChanged(QMediaPlayer::MediaStatus status)
 
             if(oynaticiSayici < playlistsMedyalar.count())
             {
-                oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(playlistsMedyalar.at(oynaticiSayici)).replace("../musics\\","../musics/")));
+                oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(playlistsMedyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../musics/")));
             }
             else
             {
@@ -823,14 +833,14 @@ void MainWindow::oynatici_mediaStatusChanged_altSistem()
             anaWidget->setMinimumSize(QSize(0, 40));
 
             QLabel *medyaIcon = new QLabel();
-            medyaIcon->setPixmap(QPixmap::fromImage(QImage(QString::fromStdWString(medyalar.at(medyaSayisi)).replace("../musics\\","../thumbnails/").replace(".mp3", ".jpeg"))));
+            medyaIcon->setPixmap(QPixmap::fromImage(QImage(QString::fromStdWString(medyalar.at(medyaSayisi)).replace("../musics" fileSeparator,"../thumbnails/").replace(".mp3", ".jpeg"))));
             medyaIcon->setScaledContents(true);
             medyaIcon->setMaximumSize(QSize(26,26));
             medyaIcon->setMinimumSize(QSize(26,26));
             anaLayout->addWidget(medyaIcon);
 
             QLabel *medyaIsim = new QLabel();
-            medyaIsim->setText(QString::fromStdWString(medyalar.at(medyaSayisi)).remove("../musics\\").remove(".mp3") + "\n  " + QString::fromStdWString(sanacilar.at(medyaSayisi)));
+            medyaIsim->setText(QString::fromStdWString(medyalar.at(medyaSayisi)).remove("../musics" fileSeparator).remove(".mp3") + "\n  " + QString::fromStdWString(sanacilar.at(medyaSayisi)));
             anaLayout->addWidget(medyaIsim);
 
             QPushButton *favoriButon = new QPushButton();
@@ -868,7 +878,7 @@ void MainWindow::oynatici_mediaStatusChanged_altSistem()
             connect(medyaOynat, &QPushButton::clicked, this,
             [this, medyaSayisi]()
             {
-                 oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(medyalar.at(medyaSayisi)).replace("../musics\\","../musics/")));
+                 oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(medyalar.at(medyaSayisi)).replace("../musics" fileSeparator,"../musics/")));
 
                 oynatici->play();
 
@@ -897,14 +907,14 @@ void MainWindow::oynatici_mediaStatusChanged_altSistem()
             anaWidget->setMinimumSize(QSize(0, 40));
 
             QLabel *medyaIcon = new QLabel();
-            medyaIcon->setPixmap(QPixmap::fromImage(QImage(QString::fromStdWString(playlistsMedyalar.at(medyaSayisi)).replace("../musics\\","../playlistTumbnails/").replace(".mp3", ".jpeg"))));
+            medyaIcon->setPixmap(QPixmap::fromImage(QImage(QString::fromStdWString(playlistsMedyalar.at(medyaSayisi)).replace("../musics" fileSeparator,"../playlistTumbnails/").replace(".mp3", ".jpeg"))));
             medyaIcon->setScaledContents(true);
             medyaIcon->setMaximumSize(QSize(26,26));
             medyaIcon->setMinimumSize(QSize(26,26));
             anaLayout->addWidget(medyaIcon);
 
             QLabel *medyaIsim = new QLabel();
-            medyaIsim->setText(QString::fromStdWString(playlistsMedyalar.at(medyaSayisi)).remove("../musics\\").remove(".mp3") + "\n  " + QString::fromStdWString(playlistsSanacilar.at(medyaSayisi)));
+            medyaIsim->setText(QString::fromStdWString(playlistsMedyalar.at(medyaSayisi)).remove("../musics" fileSeparator).remove(".mp3") + "\n  " + QString::fromStdWString(playlistsSanacilar.at(medyaSayisi)));
             anaLayout->addWidget(medyaIsim);
 
             QPushButton *favoriButon = new QPushButton();
@@ -942,7 +952,7 @@ void MainWindow::oynatici_mediaStatusChanged_altSistem()
             connect(medyaOynat, &QPushButton::clicked, this,
             [this, medyaSayisi]()
             {
-                oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(playlistsMedyalar.at(medyaSayisi)).replace("../musics\\","../musics/")));
+                oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(playlistsMedyalar.at(medyaSayisi)).replace("../musics" fileSeparator,"../musics/")));
 
                 oynatici->play();
 
@@ -983,14 +993,14 @@ void MainWindow::medyaArama_textChanged(QString deger)
                 anaWidget->setMinimumSize(QSize(0, 40));
 
                 QLabel *medyaIcon = new QLabel();
-                medyaIcon->setPixmap(QPixmap::fromImage(QImage(QString::fromStdWString(i).replace("../musics\\","../thumbnails/").replace(".mp3", ".jpeg"))));
+                medyaIcon->setPixmap(QPixmap::fromImage(QImage(QString::fromStdWString(i).replace("../musics" fileSeparator,"../thumbnails/").replace(".mp3", ".jpeg"))));
                 medyaIcon->setScaledContents(true);
                 medyaIcon->setMaximumSize(QSize(26,26));
                 medyaIcon->setMinimumSize(QSize(26,26));
                 anaLayout->addWidget(medyaIcon);
 
                 QLabel *medyaIsim = new QLabel();
-                medyaIsim->setText(QString::fromStdWString(i).remove("../musics\\").remove(".mp3") + "\n  " + QString::fromStdWString(sanacilar.at(std::distance(medyalar.begin(),std::find(medyalar.begin(), medyalar.end(), i)))));
+                medyaIsim->setText(QString::fromStdWString(i).remove("../musics" fileSeparator).remove(".mp3") + "\n  " + QString::fromStdWString(sanacilar.at(std::distance(medyalar.begin(),std::find(medyalar.begin(), medyalar.end(), i)))));
                 anaLayout->addWidget(medyaIsim);
 
                 QPushButton *favoriButon = new QPushButton();
@@ -1028,7 +1038,7 @@ void MainWindow::medyaArama_textChanged(QString deger)
                 connect(medyaOynat, &QPushButton::clicked, this,
                         [this, i]()
                         {
-                            oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(i).replace("../musics\\","../musics/")));
+                            oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(i).replace("../musics" fileSeparator,"../musics/")));
 
                             oynatici->play();
 
@@ -1058,14 +1068,14 @@ void MainWindow::medyaArama_textChanged(QString deger)
                 anaWidget->setMinimumSize(QSize(0, 40));
 
                 QLabel *medyaIcon = new QLabel();
-                medyaIcon->setPixmap(QPixmap::fromImage(QImage(QString::fromStdWString(i).replace("../musics\\","../playlistTumbnails/").replace(".mp3", ".jpeg"))));
+                medyaIcon->setPixmap(QPixmap::fromImage(QImage(QString::fromStdWString(i).replace("../musics" fileSeparator,"../playlistTumbnails/").replace(".mp3", ".jpeg"))));
                 medyaIcon->setScaledContents(true);
                 medyaIcon->setMaximumSize(QSize(26,26));
                 medyaIcon->setMinimumSize(QSize(26,26));
                 anaLayout->addWidget(medyaIcon);
 
                 QLabel *medyaIsim = new QLabel();
-                medyaIsim->setText(QString::fromStdWString(i).remove("../musics\\").remove(".mp3") + "\n  " + QString::fromStdWString(playlistsSanacilar.at(std::distance(playlistsMedyalar.begin(),std::find(playlistsMedyalar.begin(), playlistsMedyalar.end(), i)))));
+                medyaIsim->setText(QString::fromStdWString(i).remove("../musics" fileSeparator).remove(".mp3") + "\n  " + QString::fromStdWString(playlistsSanacilar.at(std::distance(playlistsMedyalar.begin(),std::find(playlistsMedyalar.begin(), playlistsMedyalar.end(), i)))));
                 anaLayout->addWidget(medyaIsim);
 
                 QPushButton *favoriButon = new QPushButton();
@@ -1103,7 +1113,7 @@ void MainWindow::medyaArama_textChanged(QString deger)
                 connect(medyaOynat, &QPushButton::clicked, this,
                         [this, i]()
                         {
-                            oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(i).replace("../musics\\","../musics/")));
+                            oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(i).replace("../musics" fileSeparator,"../musics/")));
 
                             oynatici->play();
 
@@ -1122,7 +1132,7 @@ void MainWindow::medyaArama_textChanged(QString deger)
 
 void MainWindow::medyalar_itemActivated(QListWidgetItem* item)
 {
-    oynatici->setSource(QUrl::fromLocalFile(item->listWidget()->itemWidget(item)->toolTip().replace("../musics\\","../musics/")));
+    oynatici->setSource(QUrl::fromLocalFile(item->listWidget()->itemWidget(item)->toolTip().replace("../musics" fileSeparator,"../musics/")));
     oynatici->play();
     gecerliIndex = std::distance(medyalar.begin(),std::find(medyalar.begin(), medyalar.end(), QString(item->listWidget()->itemWidget(item)->toolTip()).toStdWString()));
 }
@@ -1243,7 +1253,7 @@ void MainWindow::medyalariListele(std::wstring playlistsName)
     connect(yuklenmeEkrani, &QProgressDialog::canceled, this, [](){exit(0);});
 
 
-    oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(playlistsMedyalar.at(0)).replace("../musics\\","../musics/")));
+    oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(playlistsMedyalar.at(0)).replace("../musics" fileSeparator,"../musics/")));
 }
 
 void oynatmaListesiOlusturma::oynatmaListesiOlusturmaBitis()
@@ -1284,7 +1294,7 @@ void MainWindow::favorileriYaz()
     std::ofstream favorilerFile("../playlists/Favoriler.txt");
 
     for (auto i : favoriMedyalar) {
-        favorilerFile << QString(i.c_str()).toStdString();
+        favorilerFile << QString::fromStdWString(i.c_str()).toStdString();
 
         if(i != favoriMedyalar.last())
         {

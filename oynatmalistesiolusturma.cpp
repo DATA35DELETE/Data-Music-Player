@@ -1,6 +1,16 @@
 #include "oynatmalistesiolusturma.h"
 #include "ui_oynatmalistesiolusturma.h"
 
+#ifdef WIN32
+
+#define fileSeparator "\\"
+
+#else
+
+#define fileSeparator "/"
+
+#endif
+
 QVector<std::wstring> seciliMedyalar;
 
 oynatmaListesiOlusturma::oynatmaListesiOlusturma(QWidget *parent)
@@ -48,7 +58,7 @@ void oynatmaListesiOlusturma::oynatmaListesiOlusturmaBaslangic()
         for (auto ii : std::filesystem::directory_iterator("../musics")) {
             if(i == ii.last_write_time().time_since_epoch().count())
             {
-                medyalar.emplace_back(ii.path());
+                medyalar.emplace_back(QString(ii.path().c_str()).toStdWString());
 
                 break;
             }
@@ -60,7 +70,7 @@ void oynatmaListesiOlusturma::oynatmaListesiOlusturmaBaslangic()
         QWidget *anaWidget = new QWidget(this);
         QHBoxLayout *anaLayout = new QHBoxLayout(anaWidget);
 
-        QCheckBox *check = new QCheckBox(QString::fromStdWString(i).remove("../musics\\").remove(".mp3"));
+        QCheckBox *check = new QCheckBox(QString::fromStdWString(i).remove("../musics" fileSeparator).remove(".mp3"));
         connect(check, &QCheckBox::checkStateChanged, this,
         [this, i](Qt::CheckState deger)
         {
@@ -119,7 +129,7 @@ void oynatmaListesiOlusturma::ekle_clicked()
             std::ofstream playlistFile(playlistName.toStdString().c_str());
 
             for (auto i : seciliMedyalar) {
-                playlistFile << QString(i.c_str()).toStdString();
+                playlistFile << QString::fromStdWString(i.c_str()).toStdString();
 
                 if(i != seciliMedyalar.last())
                 {

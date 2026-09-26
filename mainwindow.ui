@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1147</width>
+    <width>1260</width>
     <height>604</height>
    </rect>
   </property>
@@ -222,7 +222,7 @@
         <widget class="QLabel" name="medyaGuncelSure">
          <property name="maximumSize">
           <size>
-           <width>45</width>
+           <width>65</width>
            <height>16777215</height>
           </size>
          </property>
@@ -709,8 +709,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1147</width>
-     <height>21</height>
+     <width>1260</width>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuDosya">
