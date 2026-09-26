@@ -4,7 +4,7 @@
 
 int main(int argc, char *argv[])
 {
-    //QLoggingCategory::setFilterRules("qt.multimedia.*=false");
+    QLoggingCategory::setFilterRules("qt.multimedia.*=false");
 
     QApplication a(argc, argv);
 

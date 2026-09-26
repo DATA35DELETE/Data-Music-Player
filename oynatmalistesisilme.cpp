@@ -9,9 +9,12 @@ oynatmaListesiSilme::oynatmaListesiSilme(QWidget *parent)
 {
     ui->setupUi(this);
 
+    this->setWindowFlags(Qt::WindowType::CoverWindow | Qt::WindowType::WindowStaysOnTopHint);
+
     this->setWindowIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/NoMedia.png"));
 
     connect(ui->sil, &QPushButton::clicked, this, &oynatmaListesiSilme::sil_clicked);
+    connect(ui->cikis, &QPushButton::clicked, this, [this](){this->setVisible(false); oynatmaListesiSilmeBitis();});
 }
 
 oynatmaListesiSilme::~oynatmaListesiSilme()
@@ -30,9 +33,12 @@ void oynatmaListesiSilme::oynatmaListesiSilmeBaslangic()
 
     for(auto i: std::filesystem::directory_iterator("../playlists/"))
     {
-        medyalarZaman.emplace_back(i.last_write_time().time_since_epoch().count());
+        if(!QString(i.path().filename().c_str()).contains("Favoriler.txt"))
+        {
+            medyalarZaman.emplace_back(i.last_write_time().time_since_epoch().count());
 
-        medyalarZamanCount++;
+            medyalarZamanCount++;
+        }
     }
 
     std::sort(medyalarZaman.rbegin(), medyalarZaman.rend());

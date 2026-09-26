@@ -11,10 +11,12 @@
 #include <QMediaMetaData>
 #include <QImage>
 #include <QFile>
+#include <QFileDialog>
 #include <QProgressDialog>
 #include <QShortcut>
 #include <QListWidgetItem>
 #include <QLoggingCategory>
+#include <QDirIterator>
 
 #include <filesystem>
 #include <vector>
@@ -26,6 +28,7 @@
 
 #include "oynatmalistesiolusturma.h"
 #include "oynatmalistesisilme.h"
+#include "medyayuzenpencere.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -46,6 +49,9 @@ public:
 
     void medyalariListele(std::wstring);
 
+    void favorileriListele();
+    void favorileriYaz();
+
     void oynatici_mediaStatusChanged_altSistem();
 
 public slots:
@@ -59,10 +65,12 @@ public slots:
     void medyaArama_textChanged(QString);
     void medyalar_itemActivated(QListWidgetItem*);
     void oynatmaListeleri_clicked();
+    void actionDosya_Ekle_triggered(bool);
 
 private:
     Ui::MainWindow *ui;
     oynatmaListesiOlusturma *oynatmaListesiCreate;
     oynatmaListesiSilme *oynatmaListesiDelete;
+    medyaYuzenPencere *yuzenPencere;
 };
 #endif // MAINWINDOW_H

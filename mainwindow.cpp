@@ -2,11 +2,15 @@
 #include "./ui_mainwindow.h"
 
 QVector<std::wstring> medyalar;
+
+QVector<std::wstring> favoriMedyalar;
+
 QVector<std::wstring> sanacilar;
 
 QVector<std::wstring> playlistsMedyalar;
 QVector<std::wstring> playlistsSanacilar;
 bool isPlaylists = false;
+bool isYuzenPencere = false;
 
 QMediaPlayer *oynatici;
 QAudioOutput *cikis;
@@ -21,6 +25,8 @@ QProgressDialog *yuklenmeEkrani;
 
 int oynaticiSayici = 0;
 bool isReset = false;
+bool isPlay = false;
+qint64 isPlayPosition = 0;
 
 MainWindow *mw2;
 
@@ -33,6 +39,7 @@ ui(new Ui::MainWindow) {
 
     oynatmaListesiCreate = new oynatmaListesiOlusturma;
     oynatmaListesiDelete = new oynatmaListesiSilme;
+    yuzenPencere = new medyaYuzenPencere;
 
     oynatici = new QMediaPlayer;
     cikis = new QAudioOutput;
@@ -42,6 +49,8 @@ ui(new Ui::MainWindow) {
     cikis->setVolume(ui->medyaSesSeviyesi->value());
 
     medyalariListele();
+
+    favorileriListele();
 
     QWidget *girisSecenegi = new QWidget(this);
     QHBoxLayout *girisSecenegiLayout = new QHBoxLayout(girisSecenegi);
@@ -170,6 +179,7 @@ ui(new Ui::MainWindow) {
 
             medyalar.clear();
             sanacilar.clear();
+            favorileriListele();
             oynaticiSayici = 0;
 
             connect(
@@ -194,6 +204,39 @@ ui(new Ui::MainWindow) {
     connect(ui->playlistsArama, &QLineEdit::textChanged, this, &MainWindow::medyaArama_textChanged);
     connect(ui->actionEkle, &QAction::triggered, this, [this](){this->setVisible(false); oynatmaListesiCreate->oynatmaListesiOlusturmaBaslangic();});
     connect(ui->actionKald_r, &QAction::triggered, this, [this](){this->setVisible(false); oynatmaListesiDelete->oynatmaListesiSilmeBaslangic();});
+    connect(ui->medyaCikar, &QPushButton::clicked, this, [this](){this->setVisible(false); yuzenPencere->medyaYuzen_baslangic(); isYuzenPencere = true;});
+
+    connect(yuzenPencere->medyaYuzenOynatma, &QPushButton::clicked, this, &MainWindow::medyaOynatmaKontrol_clicked);
+    connect(yuzenPencere->medyaYuzenOnceki, &QPushButton::clicked, this, [this](){
+        if(mod == 1)
+        {
+            mod = 0;
+
+            medyaCal(false);
+
+            mod = 1;
+        }
+        else
+        {
+            medyaCal(false);
+        }
+    });
+    connect(yuzenPencere->medyaYuzenSonraki, &QPushButton::clicked, this, [this](){
+        if(mod == 1)
+        {
+            mod = 0;
+
+            medyaCal(true);
+
+            mod = 1;
+        }
+        else
+        {
+            medyaCal(true);
+        }
+    });
+    connect(yuzenPencere->medyaYuzenKapat, &QPushButton::clicked, this, [this](){yuzenPencere->setVisible(false); isYuzenPencere = false; this->setVisible(true);});
+    connect(ui->actionDosya_Ekle, &QAction::triggered, this, &MainWindow::actionDosya_Ekle_triggered);
 }
 
 MainWindow::~MainWindow()
@@ -203,15 +246,40 @@ MainWindow::~MainWindow()
 
 void MainWindow::medyaOynatmaKontrol_clicked()
 {
-    if(oynatici->isPlaying())
+    if(isPlay)
     {
-        ui->medyaOynatmaKontrol->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/baslatma.png"));
+
+        if(!isYuzenPencere)
+            ui->medyaOynatmaKontrol->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/baslatma.png"));
+        else
+            yuzenPencere->medyaYuzenOynatma->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/baslatma.png"));
+
+        if(mod == 1)
+        {
+            isPlayPosition = oynatici->position();
+
+            medyaSlider_positionChanged(isPlayPosition);
+        }
+
         oynatici->pause();
+
+        isPlay= false;
     }
     else
     {
-        ui->medyaOynatmaKontrol->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/duraklatma.png"));
+        if(!isYuzenPencere)
+            ui->medyaOynatmaKontrol->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/duraklatma.png"));
+        else
+            yuzenPencere->medyaYuzenOynatma->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/duraklatma.png"));
+
+        if(mod == 1)
+        {
+            oynatici->setPosition(isPlayPosition);
+        }
+
         oynatici->play();
+
+        isPlay= true;
     }
 
 }
@@ -232,8 +300,9 @@ void MainWindow::medyalariListele()
         medyalarZamanCount++;
     }
 
-    delete yuklenmeEkrani;
     yuklenmeEkrani = new QProgressDialog("Yükleniyor...", "İptal", 0, medyalarZamanCount);
+    yuklenmeEkrani->setWindowTitle("Yükleniyor...");
+    yuklenmeEkrani->setWindowFlags(Qt::WindowType::CoverWindow | Qt::WindowType::WindowStaysOnTopHint);
     connect(yuklenmeEkrani, &QProgressDialog::canceled, this, [](){exit(0);});
 
     std::sort(medyalarZaman.rbegin(), medyalarZaman.rend());
@@ -291,143 +360,197 @@ void MainWindow::medyaSlider_positionChanged(qint64 deger)
 {
     if(!kullaniciKontrol && !isReset)
     {
-        long long maxMusicSaniyesi = oynatici->duration();
-
-        double musicYuzdeHesaplama = (double)deger / (double)maxMusicSaniyesi;
-
-        ui->medyaSlider->setProperty("value", (int)(musicYuzdeHesaplama * 100));
-
-        int guncelSaniye = (int)((float)oynatici->position() / 1000);
-
-        int saat = 0;
-        int dakika = 0;
-
-        while(guncelSaniye >= 60)
+        if(isYuzenPencere)
         {
-            guncelSaniye -= 60;
-            dakika++;
-        }
-        while(dakika >= 60)
-        {
-            dakika -= 60;
-            saat++;
-        }
+            long long maxMusicSaniyesi = oynatici->duration();
 
-        std::string prompt;
+            double musicYuzdeHesaplama = (double)deger / (double)maxMusicSaniyesi;
 
-        if(saat < 10)
-        {
-            prompt += "0";
-            prompt += saat + 48;
+            yuzenPencere->medyaYuzenBar->setProperty("value", (int)(musicYuzdeHesaplama * 100));
+
+            if(oynatici->metaData().value(QMediaMetaData::ThumbnailImage).isNull())
+            {
+                yuzenPencere->medyaYuzenIco->setPixmap(QPixmap(":/medyaKontrol/assets/medyaKontrol/NoMedia.png"));
+            }
+            else
+            {
+                oynatici->metaData().value(QMediaMetaData::ThumbnailImage).value<QImage>().save("../temp2.jpeg", "JPEG");
+
+                QImageReader rd("../temp2.jpeg");
+                rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
+
+                yuzenPencere->medyaYuzenIco->setPixmap(QPixmap::fromImage(rd.read()));
+            }
+
+            if(!isPlaylists)
+            {
+                yuzenPencere->medyaYuzenIsim->setText(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics\\").remove(".mp3"));
+                yuzenPencere->setWindowTitle(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics\\").remove(".mp3"));
+                yuzenPencere->medyaYuzenSanatci->setText(QString::fromStdWString(sanacilar.at(gecerliIndex)));
+                ui->medyalar->setCurrentRow(gecerliIndex);
+            }
+            else
+            {
+                yuzenPencere->medyaYuzenIsim->setText(QString::fromStdWString(playlistsMedyalar.at(gecerliIndex)).remove("../musics\\").remove(".mp3"));
+                yuzenPencere->setWindowTitle(QString::fromStdWString(playlistsMedyalar.at(gecerliIndex)).remove("../musics\\").remove(".mp3"));
+                yuzenPencere->medyaYuzenSanatci->setText(QString::fromStdWString(playlistsSanacilar.at(gecerliIndex)));
+                ui->playlistsList->setCurrentRow(gecerliIndex);
+            }
+
+            if(oynatici->position() == oynatici->duration())
+            {
+                medyaCal(true);
+            }
         }
         else
         {
-            prompt += (saat / 10) + 48;
-            prompt += ((((float)saat / (float)10) - ((int)saat / (int)10)) * 10) + 48;
-        }
-        prompt += ":";
-        if(dakika < 10)
-        {
-            prompt += "0";
-            prompt += dakika + 48;
-        }
-        else
-        {
-            prompt += (dakika / 10) + 48;
-            prompt += ((((float)dakika / (float)10) - ((int)dakika / (int)10)) * 10) + 48;
-        }
-        prompt += ":";
-        if(guncelSaniye < 10)
-        {
-            prompt += "0";
-            prompt += guncelSaniye + 48;
-        }
-        else
-        {
-            prompt += (guncelSaniye / 10) + 48;
-            prompt += ((((float)guncelSaniye / (float)10) - ((int)guncelSaniye / (int)10)) * 10) + 48;
-        }
+            long long maxMusicSaniyesi = oynatici->duration();
 
-        ui->medyaGuncelSure->setProperty("text", prompt.c_str());
+            double musicYuzdeHesaplama = (double)deger / (double)maxMusicSaniyesi;
 
-        guncelSaniye = (int)((float)oynatici->duration() / 1000);
+            ui->medyaSlider->setProperty("value", (int)(musicYuzdeHesaplama * 100));
 
-        saat = 0;
-        dakika = 0;
+            int guncelSaniye = (int)((float)oynatici->position() / 1000);
 
-        while(guncelSaniye >= 60)
-        {
-            guncelSaniye -= 60;
-            dakika++;
-        }
-        while(dakika >= 60)
-        {
-            dakika -= 60;
-            saat++;
-        }
+            int saat = 0;
+            int dakika = 0;
 
-        prompt = "";
+            while(guncelSaniye >= 60)
+            {
+                guncelSaniye -= 60;
+                dakika++;
+            }
+            while(dakika >= 60)
+            {
+                dakika -= 60;
+                saat++;
+            }
 
-        if(saat < 10)
-        {
-            prompt += "0";
-            prompt += saat + 48;
-        }
-        else
-        {
-            prompt += (saat / 10) + 48;
-            prompt += ((((float)saat / (float)10) - ((int)saat / (int)10)) * 10) + 48;
-        }
-        prompt += ":";
-        if(dakika < 10)
-        {
-            prompt += "0";
-            prompt += dakika + 48;
-        }
-        else
-        {
-            prompt += (dakika / 10) + 48;
-            prompt += ((((float)dakika / (float)10) - ((int)dakika / (int)10)) * 10) + 48;
-        }
-        prompt += ":";
-        if(guncelSaniye < 10)
-        {
-            prompt += "0";
-            prompt += guncelSaniye + 48;
-        }
-        else
-        {
-            prompt += (guncelSaniye / 10) + 48;
-            prompt += ((((float)guncelSaniye / (float)10) - ((int)guncelSaniye / (int)10)) * 10) + 48;
-        }
+            std::string prompt;
 
-        ui->medyaSuresi->setProperty("text", prompt.c_str());
+            if(saat < 10)
+            {
+                prompt += "0";
+                prompt += saat + 48;
+            }
+            else
+            {
+                prompt += (saat / 10) + 48;
+                prompt += ((((float)saat / (float)10) - ((int)saat / (int)10)) * 10) + 48;
+            }
+            prompt += ":";
+            if(dakika < 10)
+            {
+                prompt += "0";
+                prompt += dakika + 48;
+            }
+            else
+            {
+                prompt += (dakika / 10) + 48;
+                prompt += ((((float)dakika / (float)10) - ((int)dakika / (int)10)) * 10) + 48;
+            }
+            prompt += ":";
+            if(guncelSaniye < 10)
+            {
+                prompt += "0";
+                prompt += guncelSaniye + 48;
+            }
+            else
+            {
+                prompt += (guncelSaniye / 10) + 48;
+                prompt += ((((float)guncelSaniye / (float)10) - ((int)guncelSaniye / (int)10)) * 10) + 48;
+            }
 
-        if(oynatici->position() == oynatici->duration())
-        {
-            medyaCal(true);
-        }
+            ui->medyaGuncelSure->setProperty("text", prompt.c_str());
 
-        if(oynatici->metaData().value(QMediaMetaData::ThumbnailImage).isNull())
-        {
-            ui->medyaICon->setPixmap(QPixmap(":/medyaKontrol/assets/medyaKontrol/NoMedia.png"));
-        }
-        else
-        {
-            ui->medyaICon->setPixmap(QPixmap::fromImage(oynatici->metaData().value(QMediaMetaData::ThumbnailImage).value<QImage>()));
-        }
+            guncelSaniye = (int)((float)oynatici->duration() / 1000);
 
-        if(!isPlaylists)
-        {
-            ui->medyaIsim->setText(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics\\").remove(".mp3"));
-            ui->medyaSanatci->setText(QString::fromStdWString(sanacilar.at(gecerliIndex)));
-            ui->medyalar->setCurrentRow(gecerliIndex);
-        }
-        else
-        {
-            ui->medyaIsim->setText(QString::fromStdWString(playlistsMedyalar.at(gecerliIndex)).remove("../musics\\").remove(".mp3"));
-            ui->medyaSanatci->setText(QString::fromStdWString(playlistsSanacilar.at(gecerliIndex)));
-            ui->playlistsList->setCurrentRow(gecerliIndex);
+            saat = 0;
+            dakika = 0;
+
+            while(guncelSaniye >= 60)
+            {
+                guncelSaniye -= 60;
+                dakika++;
+            }
+            while(dakika >= 60)
+            {
+                dakika -= 60;
+                saat++;
+            }
+
+            prompt = "";
+
+            if(saat < 10)
+            {
+                prompt += "0";
+                prompt += saat + 48;
+            }
+            else
+            {
+                prompt += (saat / 10) + 48;
+                prompt += ((((float)saat / (float)10) - ((int)saat / (int)10)) * 10) + 48;
+            }
+            prompt += ":";
+            if(dakika < 10)
+            {
+                prompt += "0";
+                prompt += dakika + 48;
+            }
+            else
+            {
+                prompt += (dakika / 10) + 48;
+                prompt += ((((float)dakika / (float)10) - ((int)dakika / (int)10)) * 10) + 48;
+            }
+            prompt += ":";
+            if(guncelSaniye < 10)
+            {
+                prompt += "0";
+                prompt += guncelSaniye + 48;
+            }
+            else
+            {
+                prompt += (guncelSaniye / 10) + 48;
+                prompt += ((((float)guncelSaniye / (float)10) - ((int)guncelSaniye / (int)10)) * 10) + 48;
+            }
+
+            ui->medyaSuresi->setProperty("text", prompt.c_str());
+
+            if(oynatici->position() == oynatici->duration())
+            {
+                medyaCal(true);
+            }
+
+            if(oynatici->metaData().value(QMediaMetaData::ThumbnailImage).isNull())
+            {
+                ui->medyaICon->setPixmap(QPixmap(":/medyaKontrol/assets/medyaKontrol/NoMedia.png"));
+            }
+            else
+            {
+                //ui->medyaICon->setPixmap(QPixmap::fromImage(oynatici->metaData().value(QMediaMetaData::ThumbnailImage).value<QImage>()));
+
+                oynatici->metaData().value(QMediaMetaData::ThumbnailImage).value<QImage>().save("../temp2.jpeg", "JPEG");
+
+                QImageReader rd("../temp2.jpeg");
+                rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
+
+                ui->medyaICon->setPixmap(QPixmap::fromImage(rd.read()));
+            }
+
+            if(!isPlaylists)
+            {
+                ui->medyaIsim->setText(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics\\").remove(".mp3"));
+                ui->medyaSanatci->setText(QString::fromStdWString(sanacilar.at(gecerliIndex)));
+                ui->statusbar->showMessage(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics\\").remove(".mp3").append(" | ").append(QString::fromStdWString(sanacilar.at(gecerliIndex))));
+                ui->medyalar->setCurrentRow(gecerliIndex);
+            }
+            else
+            {
+                ui->medyaIsim->setText(QString::fromStdWString(playlistsMedyalar.at(gecerliIndex)).remove("../musics\\").remove(".mp3"));
+                ui->medyaSanatci->setText(QString::fromStdWString(playlistsSanacilar.at(gecerliIndex)));
+                ui->statusbar->showMessage(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics\\").remove(".mp3").append(" | ").append(QString::fromStdWString(sanacilar.at(gecerliIndex))));
+                ui->playlistsList->setCurrentRow(gecerliIndex);
+            }
         }
     }
 }
@@ -437,6 +560,7 @@ void MainWindow::medyaSlider_sliderMoved(int deger)
     kullaniciKontrol = true;
 
     oynatici->setPosition(((oynatici->duration() * 1) / 100 ) * deger);
+    if(mod == 1) isPlayPosition = ((oynatici->duration() * 1) / 100 ) * deger;
 
     kullaniciKontrol = false;
 }
@@ -448,6 +572,8 @@ void MainWindow::medyaSlider_actionTriggered(int deger)
         kullaniciKontrol = true;
 
         oynatici->setPosition(((oynatici->duration() * 1) / 100 ) * ui->medyaSlider->value());
+
+        if(mod == 1) isPlayPosition = ((oynatici->duration() * 1) / 100 ) * ui->medyaSlider->value();
 
         QThread::msleep(500);
 
@@ -487,11 +613,12 @@ void MainWindow::medyaCal(bool ileriMi)
         else if(mod == 2)
         {
             std::random_device cihaz;
-            std::mt19937 mt(cihaz());
             std::uniform_int_distribution<int> randomer(1, medyalar.count() - 1);
 
-            gecerliIndex = randomer(mt);
+            gecerliIndex = randomer(cihaz);
         }
+
+        if(mod == 1) isPlay = true;
 
         oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(medyalar.at(gecerliIndex)).replace("../musics\\","../musics/")));
 
@@ -527,11 +654,12 @@ void MainWindow::medyaCal(bool ileriMi)
         else if(mod == 2)
         {
             std::random_device cihaz;
-            std::mt19937 mt(cihaz());
             std::uniform_int_distribution<int> randomer(1, playlistsMedyalar.count() - 1);
 
-            gecerliIndex = randomer(mt);
+            gecerliIndex = randomer(cihaz);
         }
+
+        if(mod == 1) isPlay = true;
 
         oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(playlistsMedyalar.at(gecerliIndex)).replace("../musics\\","../musics/")));
 
@@ -601,6 +729,8 @@ void MainWindow::oynatici_mediaStatusChanged(QMediaPlayer::MediaStatus status)
             {
                 oynatici->metaData().value(QMediaMetaData::ThumbnailImage).value<QImage>().save("../temp.jpeg");
                 QImageReader rd = QImageReader("../temp.jpeg");
+                rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
+
                 rd.setScaledSize(QSize(26,26));
                 rd.read().save(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics\\","../thumbnails/").replace(".mp3", ".jpeg"));
             }
@@ -638,6 +768,7 @@ void MainWindow::oynatici_mediaStatusChanged(QMediaPlayer::MediaStatus status)
             {
                 oynatici->metaData().value(QMediaMetaData::ThumbnailImage).value<QImage>().save("../temp.jpeg");
                 QImageReader rd = QImageReader("../temp.jpeg");
+                rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
                 rd.setScaledSize(QSize(26,26));
                 rd.read().save(QString::fromStdWString(playlistsMedyalar.at(oynaticiSayici)).replace("../musics\\","../playlistTumbnails/").replace(".mp3", ".jpeg"));
             }
@@ -702,6 +833,35 @@ void MainWindow::oynatici_mediaStatusChanged_altSistem()
             medyaIsim->setText(QString::fromStdWString(medyalar.at(medyaSayisi)).remove("../musics\\").remove(".mp3") + "\n  " + QString::fromStdWString(sanacilar.at(medyaSayisi)));
             anaLayout->addWidget(medyaIsim);
 
+            QPushButton *favoriButon = new QPushButton();
+            if(favoriMedyalar.contains(anaWidget->toolTip().toStdWString()))
+                favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favori.png"));
+            else
+                favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favoriNo.png"));
+            favoriButon->setMaximumSize(QSize(25,25));
+            favoriButon->setIconSize(QSize(20,20));
+            connect(favoriButon, &QPushButton::clicked, this,
+            [this, favoriButon, anaWidget]()
+            {
+                favorileriListele();
+
+                if(favoriMedyalar.contains(anaWidget->toolTip().toStdWString()))
+                {
+                    favoriMedyalar.remove(std::distance(favoriMedyalar.begin(),std::find(favoriMedyalar.begin(), favoriMedyalar.end(), anaWidget->toolTip().toStdWString())));
+
+                    favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favoriNo.png"));
+                }
+                else
+                {
+                    favoriMedyalar.append(QString(anaWidget->toolTip()).toStdWString());
+
+                    favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favori.png"));
+                }
+
+                favorileriYaz();
+            });
+            anaLayout->addWidget(favoriButon);
+
             QPushButton *medyaOynat = new QPushButton();
             medyaOynat->setText("Oynat");
             medyaOynat->setMaximumSize(QSize(100,50));
@@ -722,6 +882,8 @@ void MainWindow::oynatici_mediaStatusChanged_altSistem()
 
             medyaSayisi++;
         }
+
+        ui->medyaSarkiSayisi->setText(QString::number(medyaSayisi).append(" Şarkı"));
     }
     else
     {
@@ -745,6 +907,35 @@ void MainWindow::oynatici_mediaStatusChanged_altSistem()
             medyaIsim->setText(QString::fromStdWString(playlistsMedyalar.at(medyaSayisi)).remove("../musics\\").remove(".mp3") + "\n  " + QString::fromStdWString(playlistsSanacilar.at(medyaSayisi)));
             anaLayout->addWidget(medyaIsim);
 
+            QPushButton *favoriButon = new QPushButton();
+            if(favoriMedyalar.contains(anaWidget->toolTip().toStdWString()))
+                favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favori.png"));
+            else
+                favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favoriNo.png"));
+            favoriButon->setMaximumSize(QSize(25,25));
+            favoriButon->setIconSize(QSize(20,20));
+            connect(favoriButon, &QPushButton::clicked, this,
+                    [this, favoriButon, anaWidget]()
+                    {
+                        favorileriListele();
+
+                        if(favoriMedyalar.contains(anaWidget->toolTip().toStdWString()))
+                        {
+                            favoriMedyalar.remove(std::distance(favoriMedyalar.begin(),std::find(favoriMedyalar.begin(), favoriMedyalar.end(), anaWidget->toolTip().toStdWString())));
+
+                            favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favoriNo.png"));
+                        }
+                        else
+                        {
+                            favoriMedyalar.append(QString(anaWidget->toolTip()).toStdWString());
+
+                            favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favori.png"));
+                        }
+
+                        favorileriYaz();
+                    });
+            anaLayout->addWidget(favoriButon);
+
             QPushButton *medyaOynat = new QPushButton();
             medyaOynat->setText("Oynat");
             medyaOynat->setMaximumSize(QSize(100,50));
@@ -765,11 +956,11 @@ void MainWindow::oynatici_mediaStatusChanged_altSistem()
 
             medyaSayisi++;
         }
+
+        ui->playlistSarkiSayisi->setText(QString::number(medyaSayisi).append(" Şarkı"));
     }
 
     yuklenmeEkrani->reset();
-
-    delete yuklenmeEkrani;
 
     show();
 }
@@ -801,6 +992,35 @@ void MainWindow::medyaArama_textChanged(QString deger)
                 QLabel *medyaIsim = new QLabel();
                 medyaIsim->setText(QString::fromStdWString(i).remove("../musics\\").remove(".mp3") + "\n  " + QString::fromStdWString(sanacilar.at(std::distance(medyalar.begin(),std::find(medyalar.begin(), medyalar.end(), i)))));
                 anaLayout->addWidget(medyaIsim);
+
+                QPushButton *favoriButon = new QPushButton();
+                if(favoriMedyalar.contains(anaWidget->toolTip().toStdWString()))
+                    favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favori.png"));
+                else
+                    favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favoriNo.png"));
+                favoriButon->setMaximumSize(QSize(25,25));
+                favoriButon->setIconSize(QSize(20,20));
+                connect(favoriButon, &QPushButton::clicked, this,
+                        [this, favoriButon, anaWidget]()
+                        {
+                            favorileriListele();
+
+                            if(favoriMedyalar.contains(anaWidget->toolTip().toStdWString()))
+                            {
+                                favoriMedyalar.remove(std::distance(favoriMedyalar.begin(),std::find(favoriMedyalar.begin(), favoriMedyalar.end(), anaWidget->toolTip().toStdWString())));
+
+                                favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favoriNo.png"));
+                            }
+                            else
+                            {
+                                favoriMedyalar.append(QString(anaWidget->toolTip()).toStdWString());
+
+                                favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favori.png"));
+                            }
+
+                            favorileriYaz();
+                        });
+                anaLayout->addWidget(favoriButon);
 
                 QPushButton *medyaOynat = new QPushButton();
                 medyaOynat->setText("Oynat");
@@ -847,6 +1067,35 @@ void MainWindow::medyaArama_textChanged(QString deger)
                 QLabel *medyaIsim = new QLabel();
                 medyaIsim->setText(QString::fromStdWString(i).remove("../musics\\").remove(".mp3") + "\n  " + QString::fromStdWString(playlistsSanacilar.at(std::distance(playlistsMedyalar.begin(),std::find(playlistsMedyalar.begin(), playlistsMedyalar.end(), i)))));
                 anaLayout->addWidget(medyaIsim);
+
+                QPushButton *favoriButon = new QPushButton();
+                if(favoriMedyalar.contains(anaWidget->toolTip().toStdWString()))
+                    favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favori.png"));
+                else
+                    favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favoriNo.png"));
+                favoriButon->setMaximumSize(QSize(25,25));
+                favoriButon->setIconSize(QSize(20,20));
+                connect(favoriButon, &QPushButton::clicked, this,
+                        [this, favoriButon, anaWidget]()
+                        {
+                            favorileriListele();
+
+                            if(favoriMedyalar.contains(anaWidget->toolTip().toStdWString()))
+                            {
+                                favoriMedyalar.remove(std::distance(favoriMedyalar.begin(),std::find(favoriMedyalar.begin(), favoriMedyalar.end(), anaWidget->toolTip().toStdWString())));
+
+                                favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favoriNo.png"));
+                            }
+                            else
+                            {
+                                favoriMedyalar.append(QString(anaWidget->toolTip()).toStdWString());
+
+                                favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favori.png"));
+                            }
+
+                            favorileriYaz();
+                        });
+                anaLayout->addWidget(favoriButon);
 
                 QPushButton *medyaOynat = new QPushButton();
                 medyaOynat->setText("Oynat");
@@ -931,6 +1180,7 @@ void MainWindow::oynatmaListeleri_clicked()
 
             playlistsMedyalar.clear();
             playlistsSanacilar.clear();
+            favorileriListele();
             oynaticiSayici = 0;
 
             for (auto i : std::filesystem::directory_iterator("../playlistTumbnails/")) {
@@ -973,13 +1223,10 @@ void MainWindow::medyalariListele(std::wstring playlistsName)
 {
     ui->playlistsList->clear();
 
-    QFile playlistsFile(QString::fromStdWString(playlistsName));
-    char playlistsFileBuffer[1000];
-
     QFile dosya(QString::fromStdWString(playlistsName));
     if (dosya.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&dosya);
-        in.setEncoding(QStringConverter::Utf8); // UTF-8 garantisi
+        in.setEncoding(QStringConverter::Utf8);
 
         while (!in.atEnd()) {
             QString satir = in.readLine();
@@ -991,12 +1238,12 @@ void MainWindow::medyalariListele(std::wstring playlistsName)
     }
 
     yuklenmeEkrani = new QProgressDialog("Yükleniyor...", "İptal", 0, playlistsMedyalar.count());
+    yuklenmeEkrani->setWindowTitle("Yükleniyor...");
+    yuklenmeEkrani->setWindowFlags(Qt::WindowType::CoverWindow | Qt::WindowType::WindowStaysOnTopHint);
+    connect(yuklenmeEkrani, &QProgressDialog::canceled, this, [](){exit(0);});
 
 
     oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(playlistsMedyalar.at(0)).replace("../musics\\","../musics/")));
-    //oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(medyalar       .at(0)).replace("../musics\\","../musics/")));
-
-    //qDebug() << QUrl::fromLocalFile(QString::fromStdWString(playlistsMedyalar.at(0)).replace("../musics\\","../musics/"));
 }
 
 void oynatmaListesiOlusturma::oynatmaListesiOlusturmaBitis()
@@ -1011,4 +1258,90 @@ void oynatmaListesiSilme::oynatmaListesiSilmeBitis()
     mw2->oynatmaListeleri_clicked();
 
     mw2->setVisible(true);
+}
+
+void MainWindow::favorileriListele()
+{
+    favoriMedyalar.clear();
+
+    QFile dosya(QString("../playlists/Favoriler.txt"));
+    if (dosya.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream in(&dosya);
+        in.setEncoding(QStringConverter::Utf8);
+
+        while (!in.atEnd()) {
+            QString satir = in.readLine();
+
+            favoriMedyalar.append(satir.toStdWString());
+        }
+
+        dosya.close();
+    }
+}
+
+void MainWindow::favorileriYaz()
+{
+    std::ofstream favorilerFile("../playlists/Favoriler.txt");
+
+    for (auto i : favoriMedyalar) {
+        favorilerFile << QString(i.c_str()).toStdString();
+
+        if(i != favoriMedyalar.last())
+        {
+            favorilerFile << "\n";
+        }
+    }
+}
+
+void MainWindow::actionDosya_Ekle_triggered(bool)
+{
+    this->setVisible(false);
+
+    QFileDialog fd(this);
+    fd.setFileMode(QFileDialog::FileMode::ExistingFiles);
+
+    fd.setNameFilter("Müzik Dosyası (*.mp3)");
+
+    fd.exec();
+
+    if(!fd.selectedFiles().isEmpty())
+    {
+        for (auto i : fd.selectedFiles()) {
+            QFile::copy(i, QString("../musics/").append(QFileInfo(i).fileName()));
+        }
+
+        QMessageBox(QMessageBox::Icon::Information, "Müzikler Eklendi!", "Müzik dosyaları başarılı bir şekilde eklenmiştir").exec();
+    }
+    else
+    {
+        QMessageBox(QMessageBox::Icon::Critical, "Müzik Seçilmedi", "Lütfen müzik seçiniz").exec();
+    }
+
+    ui->medyalar->clear();
+
+    isReset = true;
+    isPlaylists = false;
+
+    medyalar.clear();
+    sanacilar.clear();
+    favorileriListele();
+    oynaticiSayici = 0;
+
+    connect(
+        oynatici,
+        &QMediaPlayer::mediaStatusChanged,
+        this,
+        &MainWindow::oynatici_mediaStatusChanged,
+        Qt::UniqueConnection
+        );
+    oynatici->stop();
+    gecerliIndex = 0;
+    kullaniciKontrol = false;
+    mod = 0;
+
+    this->setVisible(false);
+
+    medyalariListele();
+
+    isReset = false;
 }

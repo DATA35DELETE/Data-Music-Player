@@ -8,10 +8,14 @@ oynatmaListesiOlusturma::oynatmaListesiOlusturma(QWidget *parent)
     , ui(new Ui::oynatmaListesiOlusturma)
 {
     ui->setupUi(this);
+
+    this->setWindowFlags(Qt::WindowType::CoverWindow | Qt::WindowType::WindowStaysOnTopHint);
+
     this->setWindowIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/NoMedia.png"));
 
     connect(ui->ekleIcon, &QPushButton::clicked, this, &oynatmaListesiOlusturma::oynatmaListesi_fotoSec);
     connect(ui->ekle, &QPushButton::clicked, this, &oynatmaListesiOlusturma::ekle_clicked);
+    connect(ui->cikis, &QPushButton::clicked, this, [this](){this->setVisible(false); oynatmaListesiOlusturmaBitis();});
 }
 
 oynatmaListesiOlusturma::~oynatmaListesiOlusturma()
