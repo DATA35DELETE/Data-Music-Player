@@ -15,6 +15,10 @@ public:
     explicit muzikCikar(QWidget *parent = nullptr);
     ~muzikCikar();
 
+    void muzikCikarOlusturmaBaslangic();
+    void muzikCikarOlusturmaCikis();
+    void muzikCikarOlusturmaCikis(QVector<QString>);
+
 private:
     Ui::muzikCikar *ui;
 };

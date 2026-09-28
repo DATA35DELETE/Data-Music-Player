@@ -34,7 +34,7 @@ int mod = 0;
 QProgressDialog *yuklenmeEkrani;
 
 int oynaticiSayici = 0;
-bool isReset = false;
+bool isReset = true;
 bool isPlay = false;
 qint64 isPlayPosition = 0;
 
@@ -50,6 +50,7 @@ ui(new Ui::MainWindow) {
     oynatmaListesiCreate = new oynatmaListesiOlusturma;
     oynatmaListesiDelete = new oynatmaListesiSilme;
     yuzenPencere = new medyaYuzenPencere;
+    medyaCikar = new muzikCikar;
 
     oynatici = new QMediaPlayer;
     cikis = new QAudioOutput;
@@ -200,9 +201,7 @@ ui(new Ui::MainWindow) {
 
             this->setVisible(false);
 
-            medyalariListele();
-
-            isReset = false;});
+            medyalariListele();});
     connect(giris, &QPushButton::clicked, this, [this](){ui->anaPencereleri->setCurrentWidget(ui->girisPage);});
     connect(oynatmaListeleri, &QPushButton::clicked, this, &MainWindow::oynatmaListeleri_clicked);
     connect(ui->playlistsArama, &QLineEdit::textChanged, this, &MainWindow::medyaArama_textChanged);
@@ -241,6 +240,7 @@ ui(new Ui::MainWindow) {
     });
     connect(yuzenPencere->medyaYuzenKapat, &QPushButton::clicked, this, [this](){yuzenPencere->setVisible(false); isYuzenPencere = false; this->setVisible(true);});
     connect(ui->actionDosya_Ekle, &QAction::triggered, this, &MainWindow::actionDosya_Ekle_triggered);
+    connect(ui->actionM_zik_kar, &QAction::triggered, this, [this](){this->setVisible(false); medyaCikar->muzikCikarOlusturmaBaslangic();});
 }
 
 MainWindow::~MainWindow()
@@ -290,6 +290,14 @@ void MainWindow::medyaOynatmaKontrol_clicked()
 
 void MainWindow::medyalariListele()
 {
+    QDirIterator it("../thumbnails");
+    while(it.hasNext())
+    {
+        it.next();
+
+        QFile::remove(it.filePath());
+    }
+
     medyalar.clear();
     sanacilar.clear();
     oynaticiSayici = 0;
@@ -323,41 +331,13 @@ void MainWindow::medyalariListele()
         }
     }
 
-    int gecmisMedyaSayisi = 0;
-
-    QFile iniFile("../info.ini");
-    if(iniFile.open(QFile::OpenModeFlag::ReadOnly))
-    {
-        QTextStream st(&iniFile);
-        st.setEncoding(QStringConverter::Utf8);
-
-        gecmisMedyaSayisi = st.readLine().toInt();
-
-        iniFile.close();
-    }
-
-    if(medyalarZamanCount == gecmisMedyaSayisi)
-    {
+    if(!medyalar.isEmpty()){
         oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(medyalar.at(0)).replace("../musics" fileSeparator,"../musics/")));
     }
     else
     {
-        QFile iniFile2("../info.ini");
-
-        if(iniFile2.open(QFile::OpenModeFlag::WriteOnly))
-        {
-            iniFile2.write(QString::number(medyalarZamanCount).toStdString().c_str());
-
-            iniFile2.close();
-        }
-
-        for (auto i : std::filesystem::directory_iterator("../thumbnails/")) {
-            QFile::remove(i.path());
-        }
-
-        oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(medyalar.at(0)).replace("../musics" fileSeparator,"../musics/")));
+        qDebug() << "medyalar bos";
     }
-
 }
 
 void MainWindow::medyaSlider_positionChanged(qint64 deger)
@@ -702,10 +682,6 @@ void MainWindow::medyaMod_clicked()
 
 void MainWindow::oynatici_mediaStatusChanged(QMediaPlayer::MediaStatus status)
 {
-
-    if(status != QMediaPlayer::LoadedMedia)
-        return;
-
     // Güvenlik kontrolü
     if(!isPlaylists)
     {
@@ -724,85 +700,87 @@ void MainWindow::oynatici_mediaStatusChanged(QMediaPlayer::MediaStatus status)
         }
     }
 
-
     if(status == QMediaPlayer::MediaStatus::LoadedMedia)
     {
-        if(!isPlaylists)
+        if(isReset)
         {
-            if(!oynatici->metaData().value(QMediaMetaData::ThumbnailImage).isNull())
+            if(!isPlaylists)
             {
-                oynatici->metaData().value(QMediaMetaData::ThumbnailImage).value<QImage>().save("../temp.jpeg");
-                QImageReader rd = QImageReader("../temp.jpeg");
-                rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
+                if(!oynatici->metaData().value(QMediaMetaData::ThumbnailImage).isNull())
+                {
+                    oynatici->metaData().value(QMediaMetaData::ThumbnailImage).value<QImage>().save("../temp.jpeg");
+                    QImageReader rd = QImageReader("../temp.jpeg");
+                    rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
 
-                rd.setScaledSize(QSize(26,26));
-                rd.read().save(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../thumbnails/").replace(".mp3", ".jpeg"));
+                    rd.setScaledSize(QSize(26,26));
+                    rd.read().save(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../thumbnails/").replace(".mp3", ".jpeg"));
+                }
+                else
+                {
+                    QFile::remove(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator, "../thumbnails/").replace(".mp3", ".png"));
+                    QFile::copy(":/medyaKontrol/assets/medyaKontrol/NoMedia.png", QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator, "../thumbnails/").replace(".mp3", ".png"));
+                }
+                if(!oynatici->metaData().value(QMediaMetaData::ContributingArtist).isNull())
+                {
+                    sanacilar.append(oynatici->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().toStdWString());
+                }
+                else
+                {
+                    sanacilar.append(L"Belirtilmemiş");
+                }
+
+                yuklenmeEkrani->setValue(yuklenmeEkrani->value() + 1);
+                yuklenmeEkrani->setWindowIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/NoMedia.png"));
+
+                oynaticiSayici++;
+
+                if(oynaticiSayici < medyalar.count())
+                {
+                    oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../musics/")));
+                }
+                else
+                {
+                    oynatici_mediaStatusChanged_altSistem();
+                }
             }
             else
             {
-                QFile::remove(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator, "../thumbnails/").replace(".mp3", ".png"));
-                QFile::copy(":/medyaKontrol/assets/medyaKontrol/NoMedia.png", QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator, "../thumbnails/").replace(".mp3", ".png"));
-            }
-            if(!oynatici->metaData().value(QMediaMetaData::ContributingArtist).isNull())
-            {
-                sanacilar.append(oynatici->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().toStdWString());
-            }
-            else
-            {
-                sanacilar.append(L"Belirtilmemiş");
-            }
+                if(!oynatici->metaData().value(QMediaMetaData::ThumbnailImage).isNull())
+                {
+                    oynatici->metaData().value(QMediaMetaData::ThumbnailImage).value<QImage>().save("../temp.jpeg");
+                    QImageReader rd = QImageReader("../temp.jpeg");
+                    rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
+                    rd.setScaledSize(QSize(26,26));
+                    rd.read().save(QString::fromStdWString(playlistsMedyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../playlistTumbnails/").replace(".mp3", ".jpeg"));
+                }
+                else
+                {
+                    QFile::remove(QString::fromStdWString(playlistsMedyalar.at(oynaticiSayici)).replace("../musics" fileSeparator, "../playlistTumbnails/").replace(".mp3", ".png"));
+                    QFile::copy(":/medyaKontrol/assets/medyaKontrol/NoMedia.png", QString::fromStdWString(playlistsMedyalar.at(oynaticiSayici)).replace("../musics" fileSeparator, "../playlistTumbnails/").replace(".mp3", ".png"));
+                }
 
-            yuklenmeEkrani->setValue(yuklenmeEkrani->value() + 1);
-            yuklenmeEkrani->setWindowIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/NoMedia.png"));
+                if(!oynatici->metaData().value(QMediaMetaData::ContributingArtist).isNull())
+                {
+                    playlistsSanacilar.append(oynatici->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().toStdWString());
+                }
+                else
+                {
+                    playlistsSanacilar.append(L"Belirtilmemiş");
+                }
 
-            oynaticiSayici++;
+                yuklenmeEkrani->setValue(yuklenmeEkrani->value() + 1);
+                yuklenmeEkrani->setWindowIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/NoMedia.png"));
 
-            if(oynaticiSayici < medyalar.count())
-            {
-                oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../musics/")));
-            }
-            else
-            {
-                oynatici_mediaStatusChanged_altSistem();
-            }
-        }
-        else
-        {
-            if(!oynatici->metaData().value(QMediaMetaData::ThumbnailImage).isNull())
-            {
-                oynatici->metaData().value(QMediaMetaData::ThumbnailImage).value<QImage>().save("../temp.jpeg");
-                QImageReader rd = QImageReader("../temp.jpeg");
-                rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
-                rd.setScaledSize(QSize(26,26));
-                rd.read().save(QString::fromStdWString(playlistsMedyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../playlistTumbnails/").replace(".mp3", ".jpeg"));
-            }
-            else
-            {
-                QFile::remove(QString::fromStdWString(playlistsMedyalar.at(oynaticiSayici)).replace("../musics" fileSeparator, "../playlistTumbnails/").replace(".mp3", ".png"));
-                QFile::copy(":/medyaKontrol/assets/medyaKontrol/NoMedia.png", QString::fromStdWString(playlistsMedyalar.at(oynaticiSayici)).replace("../musics" fileSeparator, "../playlistTumbnails/").replace(".mp3", ".png"));
-            }
+                oynaticiSayici++;
 
-            if(!oynatici->metaData().value(QMediaMetaData::ContributingArtist).isNull())
-            {
-                playlistsSanacilar.append(oynatici->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().toStdWString());
-            }
-            else
-            {
-                playlistsSanacilar.append(L"Belirtilmemiş");
-            }
-
-            yuklenmeEkrani->setValue(yuklenmeEkrani->value() + 1);
-            yuklenmeEkrani->setWindowIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/NoMedia.png"));
-
-            oynaticiSayici++;
-
-            if(oynaticiSayici < playlistsMedyalar.count())
-            {
-                oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(playlistsMedyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../musics/")));
-            }
-            else
-            {
-                oynatici_mediaStatusChanged_altSistem();
+                if(oynaticiSayici < playlistsMedyalar.count())
+                {
+                    oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(playlistsMedyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../musics/")));
+                }
+                else
+                {
+                    oynatici_mediaStatusChanged_altSistem();
+                }
             }
         }
     }
@@ -810,7 +788,7 @@ void MainWindow::oynatici_mediaStatusChanged(QMediaPlayer::MediaStatus status)
 
 void MainWindow::oynatici_mediaStatusChanged_altSistem()
 {
-    disconnect(oynatici, &QMediaPlayer::mediaStatusChanged, this, &MainWindow::oynatici_mediaStatusChanged);
+    //disconnect(oynatici, &QMediaPlayer::mediaStatusChanged, this, &MainWindow::oynatici_mediaStatusChanged);
 
     //int imageCount = 0;
     int medyaSayisi = 0;
@@ -965,6 +943,8 @@ void MainWindow::oynatici_mediaStatusChanged_altSistem()
     }
 
     yuklenmeEkrani->reset();
+
+    isReset = false;
 
     show();
 }
@@ -1321,31 +1301,29 @@ void MainWindow::actionDosya_Ekle_triggered(bool)
         QMessageBox(QMessageBox::Icon::Critical, "Müzik Seçilmedi", "Lütfen müzik seçiniz").exec();
     }
 
-    ui->medyalar->clear();
+    QProcess process;
+    process.startDetached("dataMusicPlayer",QStringList());
 
-    isReset = true;
-    isPlaylists = false;
+    qApp->quit();
+}
 
-    medyalar.clear();
-    sanacilar.clear();
-    favorileriListele();
-    oynaticiSayici = 0;
+void muzikCikar::muzikCikarOlusturmaCikis()
+{
+    mw2->setVisible(true);
+}
 
-    connect(
-        oynatici,
-        &QMediaPlayer::mediaStatusChanged,
-        this,
-        &MainWindow::oynatici_mediaStatusChanged,
-        Qt::UniqueConnection
-        );
-    oynatici->stop();
-    gecerliIndex = 0;
-    kullaniciKontrol = false;
-    mod = 0;
+void muzikCikar::muzikCikarOlusturmaCikis(QVector<QString> deger)
+{
+    mw2->setVisible(true);
 
-    this->setVisible(false);
+    for (auto i : deger) {
+        QFile::remove(i.prepend("../musics/").append(".mp3"));
 
-    medyalariListele();
+        qDebug() << i;
+    }
 
-    isReset = false;
+    QProcess process;
+    process.startDetached("dataMusicPlayer",QStringList());
+
+    qApp->quit();
 }

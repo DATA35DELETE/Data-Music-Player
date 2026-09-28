@@ -18,6 +18,7 @@
 #include <QLoggingCategory>
 #include <QDirIterator>
 #include <QHotkey/QHotkey>
+#include <QProcess>
 
 #include <filesystem>
 #include <vector>
@@ -30,6 +31,7 @@
 #include "oynatmalistesiolusturma.h"
 #include "oynatmalistesisilme.h"
 #include "medyayuzenpencere.h"
+#include "muzikcikar.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -73,5 +75,6 @@ private:
     oynatmaListesiOlusturma *oynatmaListesiCreate;
     oynatmaListesiSilme *oynatmaListesiDelete;
     medyaYuzenPencere *yuzenPencere;
+    muzikCikar   *medyaCikar;
 };
 #endif // MAINWINDOW_H
