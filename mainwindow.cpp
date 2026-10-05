@@ -290,12 +290,15 @@ void MainWindow::medyaOynatmaKontrol_clicked()
 
 void MainWindow::medyalariListele()
 {
-    QDirIterator it("../thumbnails");
+    QDirIterator it("../thumbnails", QDir::Filter::Files);
     while(it.hasNext())
     {
         it.next();
 
-        QFile::remove(it.filePath());
+        QFile itt(it.filePath());
+        itt.remove();
+
+        qDebug() << itt.errorString();
     }
 
     medyalar.clear();
@@ -312,11 +315,6 @@ void MainWindow::medyalariListele()
         medyalarZamanCount++;
     }
 
-    yuklenmeEkrani = new QProgressDialog("Yükleniyor...", "İptal", 0, medyalarZamanCount);
-    yuklenmeEkrani->setWindowTitle("Yükleniyor...");
-    yuklenmeEkrani->setWindowFlags(Qt::WindowType::CoverWindow | Qt::WindowType::WindowStaysOnTopHint);
-    connect(yuklenmeEkrani, &QProgressDialog::canceled, this, [](){exit(0);});
-
     std::sort(medyalarZaman.rbegin(), medyalarZaman.rend());
 
     for(auto i: medyalarZaman)
@@ -332,11 +330,16 @@ void MainWindow::medyalariListele()
     }
 
     if(!medyalar.isEmpty()){
+        yuklenmeEkrani = new QProgressDialog("Yükleniyor...", "İptal", 0, medyalarZamanCount);
+        yuklenmeEkrani->setWindowTitle("Yükleniyor...");
+        yuklenmeEkrani->setWindowFlags(Qt::WindowType::CoverWindow | Qt::WindowType::WindowStaysOnTopHint);
+        connect(yuklenmeEkrani, &QProgressDialog::canceled, this, [](){exit(0);});
+
         oynatici->setSource(QUrl::fromLocalFile(QString::fromStdWString(medyalar.at(0)).replace("../musics" fileSeparator,"../musics/")));
     }
     else
     {
-        qDebug() << "medyalar bos";
+        this->show();
     }
 }
 
@@ -708,17 +711,20 @@ void MainWindow::oynatici_mediaStatusChanged(QMediaPlayer::MediaStatus status)
             {
                 if(!oynatici->metaData().value(QMediaMetaData::ThumbnailImage).isNull())
                 {
-                    oynatici->metaData().value(QMediaMetaData::ThumbnailImage).value<QImage>().save("../temp.jpeg");
+                    oynatici->metaData().value(QMediaMetaData::ThumbnailImage).value<QImage>().save("../temp.jpeg", "JPEG");
                     QImageReader rd = QImageReader("../temp.jpeg");
                     rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
 
                     rd.setScaledSize(QSize(26,26));
-                    rd.read().save(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../thumbnails/").replace(".mp3", ".jpeg"));
+                    rd.read().save(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../thumbnails/").replace(".mp3", ".jpeg"), "JPEG");
                 }
                 else
                 {
-                    QFile::remove(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator, "../thumbnails/").replace(".mp3", ".png"));
-                    QFile::copy(":/medyaKontrol/assets/medyaKontrol/NoMedia.png", QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator, "../thumbnails/").replace(".mp3", ".png"));
+                    //QFile::remove(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator, "../thumbnails/").replace(".mp3", ".png"));
+                    //QFile::copy(":/medyaKontrol/assets/medyaKontrol/NoMedia.png", QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator, "../thumbnails/").replace(".mp3", ".png"));
+
+                    QImageReader rd = QImageReader(":/medyaKontrol/assets/medyaKontrol/NoMedia.png");
+                    rd.read().save(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../thumbnails/").replace(".mp3", ".jpeg"), "JPEG");
                 }
                 if(!oynatici->metaData().value(QMediaMetaData::ContributingArtist).isNull())
                 {
@@ -747,7 +753,7 @@ void MainWindow::oynatici_mediaStatusChanged(QMediaPlayer::MediaStatus status)
             {
                 if(!oynatici->metaData().value(QMediaMetaData::ThumbnailImage).isNull())
                 {
-                    oynatici->metaData().value(QMediaMetaData::ThumbnailImage).value<QImage>().save("../temp.jpeg");
+                    oynatici->metaData().value(QMediaMetaData::ThumbnailImage).value<QImage>().save("../temp.jpeg", "JPEG");
                     QImageReader rd = QImageReader("../temp.jpeg");
                     rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
                     rd.setScaledSize(QSize(26,26));
@@ -755,8 +761,8 @@ void MainWindow::oynatici_mediaStatusChanged(QMediaPlayer::MediaStatus status)
                 }
                 else
                 {
-                    QFile::remove(QString::fromStdWString(playlistsMedyalar.at(oynaticiSayici)).replace("../musics" fileSeparator, "../playlistTumbnails/").replace(".mp3", ".png"));
-                    QFile::copy(":/medyaKontrol/assets/medyaKontrol/NoMedia.png", QString::fromStdWString(playlistsMedyalar.at(oynaticiSayici)).replace("../musics" fileSeparator, "../playlistTumbnails/").replace(".mp3", ".png"));
+                    QImageReader rd = QImageReader(":/medyaKontrol/assets/medyaKontrol/NoMedia.png");
+                    rd.read().save(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../thumbnails/").replace(".mp3", ".jpeg"), "JPEG");
                 }
 
                 if(!oynatici->metaData().value(QMediaMetaData::ContributingArtist).isNull())
@@ -945,6 +951,8 @@ void MainWindow::oynatici_mediaStatusChanged_altSistem()
     yuklenmeEkrani->reset();
 
     isReset = false;
+
+    oynatici->setSource(QUrl());
 
     show();
 }
@@ -1217,9 +1225,8 @@ void MainWindow::medyalariListele(std::wstring playlistsName)
 
             playlistsMedyalar.append(satir.toStdWString());
         }
-
-        dosya.close();
     }
+    dosya.close();
 
     yuklenmeEkrani = new QProgressDialog("Yükleniyor...", "İptal", 0, playlistsMedyalar.count());
     yuklenmeEkrani->setWindowTitle("Yükleniyor...");
