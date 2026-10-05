@@ -12,5 +12,6 @@
         <file>assets/medyaKontrol/penceredenCikar.png</file>
         <file>assets/medyaKontrol/favori.png</file>
         <file>assets/medyaKontrol/favoriNo.png</file>
+        <file>assets/medyaKontrol/indirme.png</file>
     </qresource>
 </RCC>

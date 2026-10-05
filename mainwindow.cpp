@@ -4,10 +4,12 @@
 #ifdef WIN32
 
 #define fileSeparator "\\"
+#define ffmpegVersionNumber "ffmpeg-n9.0-latest-win64-lgpl-9.0"
 
 #else
 
 #define fileSeparator "/"
+#define ffmpegVersionNumber "ffmpeg-n9.0-latest-linux64-lgpl-9.0"
 
 #endif
 
@@ -39,6 +41,8 @@ bool isPlay = false;
 qint64 isPlayPosition = 0;
 
 MainWindow *mw2;
+
+QNetworkAccessManager *mngr;
 
 MainWindow::MainWindow(QWidget * parent)
     : QMainWindow(parent),
@@ -98,6 +102,18 @@ ui(new Ui::MainWindow) {
     oynatmaListeleriItem->setSizeHint(oynatmaListeleriSecenegi->sizeHint());
 
     ui->secenekler->setItemWidget(oynatmaListeleriItem, oynatmaListeleriSecenegi);
+
+    QWidget *indirmeSecenegi = new QWidget(this);
+    QHBoxLayout *indirmeSecenegiLayout = new QHBoxLayout(indirmeSecenegi);
+    indirmeSecenegi->setMinimumSize(QSize(0, 40));
+
+    QPushButton *indirme = new QPushButton("Medya İndirme");
+    indirmeSecenegiLayout->addWidget(indirme);
+
+    QListWidgetItem *indirmeItem = new QListWidgetItem(ui->secenekler);
+    indirmeItem->setSizeHint(indirmeSecenegi->sizeHint());
+
+    ui->secenekler->setItemWidget(indirmeItem, indirmeSecenegi);
 
     connect(ui->medyaOynatmaKontrol, &QPushButton::clicked, this,&MainWindow::medyaOynatmaKontrol_clicked);
     connect(oynatici, &QMediaPlayer::positionChanged, this, &MainWindow::medyaSlider_positionChanged);
@@ -204,6 +220,11 @@ ui(new Ui::MainWindow) {
             medyalariListele();});
     connect(giris, &QPushButton::clicked, this, [this](){ui->anaPencereleri->setCurrentWidget(ui->girisPage);});
     connect(oynatmaListeleri, &QPushButton::clicked, this, &MainWindow::oynatmaListeleri_clicked);
+    connect(indirme, &QPushButton::clicked, this,
+    [this]()
+    {
+        ui->anaPencereleri->setCurrentWidget(ui->medyaIndirme);
+    });
     connect(ui->playlistsArama, &QLineEdit::textChanged, this, &MainWindow::medyaArama_textChanged);
     connect(ui->actionEkle, &QAction::triggered, this, [this](){this->setVisible(false); oynatmaListesiCreate->oynatmaListesiOlusturmaBaslangic();});
     connect(ui->actionKald_r, &QAction::triggered, this, [this](){this->setVisible(false); oynatmaListesiDelete->oynatmaListesiSilmeBaslangic();});
@@ -241,6 +262,37 @@ ui(new Ui::MainWindow) {
     connect(yuzenPencere->medyaYuzenKapat, &QPushButton::clicked, this, [this](){yuzenPencere->setVisible(false); isYuzenPencere = false; this->setVisible(true);});
     connect(ui->actionDosya_Ekle, &QAction::triggered, this, &MainWindow::actionDosya_Ekle_triggered);
     connect(ui->actionM_zik_kar, &QAction::triggered, this, [this](){this->setVisible(false); medyaCikar->muzikCikarOlusturmaBaslangic();});
+
+#ifdef WIN32
+    if(!QFile::exists("../yt-dlp/yt-dlp.exe"))
+        connect(ui->ytDlpIndirme, &QPushButton::clicked, this, &MainWindow::ytDlpIndirme_clicked);
+    else
+    {
+        ui->ytDlpIndirme->setText("Yt-Dlp Aracını Güncelle");
+        ui->ytDlpIndirme->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/dongu.png"));
+        connect(ui->ytDlpIndirme, &QPushButton::clicked, this, &MainWindow::ytDlpIndirme_clicked2);
+    }
+
+    if(!QFile::exists("../ffmpeg/ffmpeg/bin/ffmpeg.exe"))
+        connect(ui->ffmpegIndirme, &QPushButton::clicked, this, &MainWindow::ffmpegIndirme_clicked);
+    else
+        ui->ffmpegIndirme->setEnabled(false);
+
+#else
+    if(!QFile::exists("../yt-dlp/yt-dlp"))
+        connect(ui->ytDlpIndirme, &QPushButton::clicked, this, &MainWindow::ytDlpIndirme_clicked);
+    else
+    {
+        ui->ytDlpIndirme->setText("Yt-Dlp Aracını Güncelle");
+        ui->ytDlpIndirme->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/dongu.png"));
+        connect(ui->ytDlpIndirme, &QPushButton::clicked, this, &MainWindow::ytDlpIndirme_clicked2);
+    }
+
+    if(!QFile::exists("../ffmpeg/ffmpeg/bin/ffmpeg"))
+        connect(ui->ffmpegIndirme, &QPushButton::clicked, this, &MainWindow::ffmpegIndirme_clicked);
+    else
+        ui->ffmpegIndirme->setEnabled(false);
+#endif
 }
 
 MainWindow::~MainWindow()
@@ -1333,4 +1385,124 @@ void muzikCikar::muzikCikarOlusturmaCikis(QVector<QString> deger)
     process.startDetached("dataMusicPlayer",QStringList());
 
     qApp->quit();
+}
+
+void MainWindow::ytDlpIndirme_clicked()
+{
+    ui->indirmeLog->setText(ui->indirmeLog->toPlainText().append("[Yt-Dlp İndirme]: İndirme için hazırlanılıyor..."));
+
+    mngr = new QNetworkAccessManager;
+    connect(mngr, &QNetworkAccessManager::finished, this,
+    [this](QNetworkReply *donus){
+
+        ui->indirmeLog->setText(ui->indirmeLog->toPlainText().append("[Yt-Dlp İndirme]: İndirilen dosya yazdırılıyor..."));
+
+        QFile gelenZip("../yt-dlp.zip");
+
+        if(gelenZip.open(QFile::OpenModeFlag::WriteOnly))
+        {
+            QDataStream akis(&gelenZip);
+
+            akis << donus->readAll();
+        }
+        gelenZip.close();
+
+        ui->indirmeLog->setText(ui->indirmeLog->toPlainText().append("OK\n"));
+
+        ui->indirmeLog->setText(ui->indirmeLog->toPlainText().append("[Yt-Dlp İndirme]: İndirilen dosya ayıklanıyor..."));
+
+        std::system(qPrintable(QString("tar -xf ../yt-dlp.zip -C ../yt-dlp")));
+
+        ui->indirmeLog->setText(ui->indirmeLog->toPlainText().append("OK\n"));
+
+        QMessageBox msg(
+            QMessageBox::Icon::Information,
+            "Başaralı!",
+            "Sistem başarılı bir şekilde Yt-Dlp aracını indirdi."
+        );
+
+        msg.exec();
+
+        QProcess process;
+        process.startDetached("dataMusicPlayer",QStringList());
+
+        qApp->quit();
+    });
+
+    ui->indirmeLog->setText(ui->indirmeLog->toPlainText().append("OK\n"));
+
+    mngr->get(QNetworkRequest(QUrl("https://github.com/yt-dlp/yt-dlp/releases/download/2026.08.19/yt-dlp_win.zip")));
+}
+
+void MainWindow::ytDlpIndirme_clicked2()
+{
+    ui->indirmeLog->setText(ui->indirmeLog->toPlainText().append("[Yt-Dlp]: Araç güncelleniyor..."));
+
+    std::system(qPrintable(QString(".." fileSeparator "yt-dlp" fileSeparator "yt-dlp.exe -U")));
+
+    ui->indirmeLog->setText(ui->indirmeLog->toPlainText().append("OK\n"));
+}
+
+// https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n9.0-latest-win64-lgpl-9.0.zip
+
+void MainWindow::ffmpegIndirme_clicked()
+{
+    ui->indirmeLog->setText(ui->indirmeLog->toPlainText().append("[FFmpeg İndirme]: İndirme için hazırlanılıyor..."));
+
+    mngr = new QNetworkAccessManager;
+    connect(mngr, &QNetworkAccessManager::finished, this,
+    [this](QNetworkReply *donus){
+
+        ui->indirmeLog->setText(ui->indirmeLog->toPlainText().append("[FFmpeg İndirme]: İndirilen dosya yazdırılıyor..."));
+#ifdef WIN32
+        QFile gelenZip("../" ffmpegVersionNumber ".zip");
+#else
+        QFile gelenZip("../" ffmpegVersionNumber ".tar.xz");
+#endif
+
+        if(gelenZip.open(QFile::OpenModeFlag::WriteOnly))
+        {
+            QDataStream akis(&gelenZip);
+
+            akis << donus->readAll();
+        }
+        gelenZip.close();
+
+        ui->indirmeLog->setText(ui->indirmeLog->toPlainText().append("OK\n"));
+
+         ui->indirmeLog->setText(ui->indirmeLog->toPlainText().append("[FFmpeg İndirme]: İndirilen dosya ayıklanıyor..."));
+
+#ifdef WIN32
+    std::system(qPrintable(QString("tar -xf ../" ffmpegVersionNumber ".zip -C ../ffmpeg")));
+#else
+    std::system(qPrintable(QString("tar -xf ../" ffmpegVersionNumber ".tar.xz -C ../ffmpeg")));
+#endif
+
+        ui->indirmeLog->setText(ui->indirmeLog->toPlainText().append("OK\n"));
+
+        QDir ffmpegDir("../ffmpeg");
+
+        ffmpegDir.rename(ffmpegVersionNumber, "ffmpeg");
+
+        QMessageBox msg(
+            QMessageBox::Icon::Information,
+            "Başaralı!",
+            "Sistem başarılı bir şekilde FFmpeg aracını indirdi."
+        );
+
+        msg.exec();
+
+        QProcess process;
+        process.startDetached("dataMusicPlayer",QStringList());
+
+        qApp->quit();
+    });
+
+    ui->indirmeLog->setText(ui->indirmeLog->toPlainText().append("OK\n"));
+
+#ifdef WIN32
+    mngr->get(QNetworkRequest(QUrl("https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n9.0-latest-win64-lgpl-9.0.zip")));
+#else
+    mngr->get(QNetworkRequest(QUrl("https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n9.0-latest-linux64-lgpl-9.0.tar.xz")));
+#endif
 }

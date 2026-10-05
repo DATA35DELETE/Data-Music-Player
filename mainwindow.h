@@ -19,6 +19,8 @@
 #include <QDirIterator>
 #include "QHotkey/QHotKey"
 #include <QProcess>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 
 #include <filesystem>
 #include <vector>
@@ -69,6 +71,11 @@ public slots:
     void medyalar_itemActivated(QListWidgetItem*);
     void oynatmaListeleri_clicked();
     void actionDosya_Ekle_triggered(bool);
+
+    void ytDlpIndirme_clicked();
+    void ytDlpIndirme_clicked2();
+
+    void ffmpegIndirme_clicked();
 
 private:
     Ui::MainWindow *ui;
