@@ -278,6 +278,20 @@ ui(new Ui::MainWindow) {
     else
         ui->ffmpegIndirme->setEnabled(false);
 
+    if(QFile::exists("../yt-dlp/yt-dlp.exe") && QFile::exists("../ffmpeg/ffmpeg/bin/ffmpeg.exe"))
+    {
+        connect(ui->indirmeUrl, &QLineEdit::returnPressed , this,
+        [this]()
+        {
+            medyaIndirme(ui->indirmeUrl->text());
+        });
+        connect(ui->indirme, &QPushButton::clicked , this,
+        [this]()
+        {
+            medyaIndirme(ui->indirmeUrl->text());
+        });
+    }
+
 #else
     if(!QFile::exists("../yt-dlp/yt-dlp"))
         connect(ui->ytDlpIndirme, &QPushButton::clicked, this, &MainWindow::ytDlpIndirme_clicked);
@@ -292,7 +306,21 @@ ui(new Ui::MainWindow) {
         connect(ui->ffmpegIndirme, &QPushButton::clicked, this, &MainWindow::ffmpegIndirme_clicked);
     else
         ui->ffmpegIndirme->setEnabled(false);
+
+    if(QFile::exists("../yt-dlp/yt-dlp.exe") && QFile::exists("../ffmpeg/ffmpeg/bin/ffmpeg.exe"))
+    {
+        connect(ui->indirmeUrl, &QLineEdit::returnPressed , this,
+                [this]()
+                {
+                    medyaIndirme(ui->indirmeUrl->text());
+                });
+    }
 #endif
+    connect(ui->nodeJsIndirme, &QPushButton::clicked, this,
+    [this]()
+    {
+        QDesktopServices::openUrl(QUrl("https://nodejs.org/tr/download"));
+    });
 }
 
 MainWindow::~MainWindow()
@@ -780,7 +808,10 @@ void MainWindow::oynatici_mediaStatusChanged(QMediaPlayer::MediaStatus status)
                 }
                 if(!oynatici->metaData().value(QMediaMetaData::ContributingArtist).isNull())
                 {
-                    sanacilar.append(oynatici->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().toStdWString());
+                    if(!oynatici->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty())
+                        sanacilar.append(oynatici->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().toStdWString());
+                    else
+                        sanacilar.append(L"Belirtilmemiş");
                 }
                 else
                 {
@@ -819,7 +850,10 @@ void MainWindow::oynatici_mediaStatusChanged(QMediaPlayer::MediaStatus status)
 
                 if(!oynatici->metaData().value(QMediaMetaData::ContributingArtist).isNull())
                 {
-                    playlistsSanacilar.append(oynatici->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().toStdWString());
+                    if(!oynatici->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty())
+                        playlistsSanacilar.append(oynatici->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().toStdWString());
+                    else
+                        playlistsSanacilar.append(L"Belirtilmemiş");
                 }
                 else
                 {
@@ -1505,4 +1539,78 @@ void MainWindow::ffmpegIndirme_clicked()
 #else
     mngr->get(QNetworkRequest(QUrl("https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n9.0-latest-linux64-lgpl-9.0.tar.xz")));
 #endif
+}
+
+void MainWindow::medyaIndirme(QString url)
+{
+    if(url.contains("https://open.spotify.com/"))
+    {
+        qDebug() << "Spotify aga";
+    }
+    else
+    {
+        ui->indirmeLog->setText(ui->indirmeLog->toPlainText().append("[Yt-Dlp]: İndiriliyor...\n"));
+
+        QProcess *ytDlpIndirme = new QProcess(this);
+        connect(ytDlpIndirme, &QProcess::finished, this,
+        [](int, QProcess::ExitStatus)
+        {
+            qDebug() << "annneee bitttiii";
+        });
+        connect(ytDlpIndirme, &QProcess::readyReadStandardOutput,
+                this,
+                [this, ytDlpIndirme]()
+                {
+                    QString cikti = ytDlpIndirme->readAllStandardOutput();
+
+                    ui->indirmeLog->append(cikti);
+                });
+
+        connect(ytDlpIndirme, &QProcess::readyReadStandardError,
+                this,
+                [this, ytDlpIndirme]()
+                {
+                    QString hata = ytDlpIndirme->readAllStandardError();
+
+                    ui->indirmeLog->append(hata);
+                });
+
+        QStringList args;
+
+#ifdef WIN32
+
+        args << "--js-runtimes" << "node"
+             << "--cookies" << "cookies.txt"
+             << "--ffmpeg-location" << "..\\ffmpeg\\ffmpeg\\bin"
+             << "-f" << "bestaudio/best"
+             << "-x"
+             << "--audio-format" << "mp3"
+             << "--audio-quality" << "0"
+             << "--embed-thumbnail"
+             << "--add-metadata"
+             << "-P" << "..\\musics"
+             << "-o" << "%(title)s.%(ext)s"
+             << url;
+
+        ytDlpIndirme->start("..\\yt-dlp\\yt-dlp.exe", args);
+
+#else
+
+        args << "--js-runtimes" << "node"
+             << "--cookies" << "cookies.txt"
+             << "--ffmpeg-location" << "../ffmpeg/ffmpeg/bin"
+             << "-f" << "bestaudio/best"
+             << "-x"
+             << "--audio-format" << "mp3"
+             << "--audio-quality" << "0"
+             << "--embed-thumbnail"
+             << "--add-metadata"
+             << "-P" << "../musics"
+             << "-o" << "%(title)s.%(ext)s"
+             << url;
+
+        ytDlpIndirme->start("../yt-dlp/yt-dlp", args);
+
+#endif
+    }
 }

@@ -21,6 +21,8 @@
 #include <QProcess>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QProcess>
+#include <QDesktopServices>
 
 #include <filesystem>
 #include <vector>
@@ -29,6 +31,7 @@
 #include <random>
 #include <iterator>
 #include <fstream>
+#include <iostream>
 
 #include "oynatmalistesiolusturma.h"
 #include "oynatmalistesisilme.h"
@@ -59,6 +62,8 @@ public:
 
     void oynatici_mediaStatusChanged_altSistem();
 
+    void medyaIndirme(QString);
+
 public slots:
     void medyaOynatmaKontrol_clicked();
     void medyaSlider_positionChanged(qint64);
@@ -76,6 +81,7 @@ public slots:
     void ytDlpIndirme_clicked2();
 
     void ffmpegIndirme_clicked();
+
 
 private:
     Ui::MainWindow *ui;
