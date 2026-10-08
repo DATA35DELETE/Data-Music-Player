@@ -28,6 +28,8 @@ public:
     QPushButton *medyaYuzenOnceki;
     QPushButton *medyaYuzenSonraki;
 
+    QWidget *yuzenMedyaArkaPlan;
+
     void medyaYuzen_baslangic();
 
 private:

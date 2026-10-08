@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
 
-#ifndef WIN32
+#ifdef WIN32
     a.setStyle("windows11");
 #else
     a.setStyle("fusion");

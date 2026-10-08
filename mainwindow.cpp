@@ -446,7 +446,23 @@ void MainWindow::medyaSlider_positionChanged(qint64 deger)
                 QImageReader rd("../temp2.jpeg");
                 rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
 
-                yuzenPencere->medyaYuzenIco->setPixmap(QPixmap::fromImage(rd.read()));
+                //yuzenPencere->medyaYuzenIco->setPixmap(QPixmap::fromImage(rd.read()));
+
+                QImage readBoku = rd.read();
+
+                QPixmap yuvarlak(readBoku.size());
+                yuvarlak.fill(Qt::transparent);
+
+                QPainter cizici(&yuvarlak);
+                cizici.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+
+                QPainterPath ciziciPath;
+                ciziciPath.addRoundedRect(yuvarlak.rect(), 60, 60);
+
+                cizici.setClipPath(ciziciPath);
+                cizici.drawPixmap(0,0, QPixmap::fromImage(readBoku));
+
+                yuzenPencere->medyaYuzenIco->setPixmap(yuvarlak);
             }
 
             if(!isPlaylists)
@@ -468,6 +484,21 @@ void MainWindow::medyaSlider_positionChanged(qint64 deger)
             {
                 medyaCal(true);
             }
+
+            //yuzenPencere->yuzenMedyaArkaPlan->setStyleSheet("#centralwidget{border-image: url(../temp2.jpeg) 0 0 0 0 stretch stretch;}");
+
+            QImage arkaplanRengiHesaplama("../temp2.jpeg", "JPEG");
+
+            unsigned long long r = 0, b = 0, g = 0;
+
+            for(int iii = 0; iii < arkaplanRengiHesaplama.height(); iii++)
+            {
+                r += arkaplanRengiHesaplama.pixelColor(iii, iii).red();
+                g += arkaplanRengiHesaplama.pixelColor(iii, iii).green();
+                b += arkaplanRengiHesaplama.pixelColor(iii, iii).blue();
+            }
+
+            yuzenPencere->yuzenMedyaArkaPlan->setStyleSheet(QString("#centralwidget{background-color: %1;}").arg(QColor(r / arkaplanRengiHesaplama.height(), g / arkaplanRengiHesaplama.height(), b / arkaplanRengiHesaplama.height()).name()));
         }
         else
         {
@@ -601,7 +632,23 @@ void MainWindow::medyaSlider_positionChanged(qint64 deger)
                 QImageReader rd("../temp2.jpeg");
                 rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
 
-                ui->medyaICon->setPixmap(QPixmap::fromImage(rd.read()));
+                //ui->medyaICon->setPixmap(QPixmap::fromImage(rd.read()));
+
+                QImage readBoku = rd.read();
+
+                QPixmap yuvarlak(readBoku.size());
+                yuvarlak.fill(Qt::transparent);
+
+                QPainter cizici(&yuvarlak);
+                cizici.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+
+                QPainterPath ciziciPath;
+                ciziciPath.addRoundedRect(yuvarlak.rect(), 60, 60);
+
+                cizici.setClipPath(ciziciPath);
+                cizici.drawPixmap(0,0, QPixmap::fromImage(readBoku));
+
+                ui->medyaICon->setPixmap(yuvarlak);
             }
 
             if(!isPlaylists)

@@ -23,6 +23,8 @@
 #include <QNetworkReply>
 #include <QProcess>
 #include <QDesktopServices>
+#include <QPainterPath>
+#include <QPainter>
 
 #include <filesystem>
 #include <vector>

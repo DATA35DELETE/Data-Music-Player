@@ -43,6 +43,9 @@
    <enum>Qt::ToolButtonStyle::ToolButtonFollowStyle</enum>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="2" rowspan="2">
      <widget class="QWidget" name="gridWidget" native="true">

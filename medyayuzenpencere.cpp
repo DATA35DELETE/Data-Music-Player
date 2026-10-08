@@ -17,6 +17,7 @@ medyaYuzenPencere::medyaYuzenPencere(QWidget *parent)
     medyaYuzenSanatci = ui->medyaYuzenSanatci;
     medyaYuzenOnceki = ui->medyaYuzenOnceki;
     medyaYuzenSonraki = ui->medyaYuzenSonraki;
+    yuzenMedyaArkaPlan = ui->centralwidget;
 
 }
 
