@@ -8,14 +8,31 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
 
-#ifdef WIN32
-    a.setStyle("windows11");
-#else
-    a.setStyle("fusion");
-#endif
-
     MainWindow w;
-    w.setWindowIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/NoMedia.png"));
+
+    QSettings ayarlarFile("ayarlar.ini", QSettings::Format::IniFormat);
+
+    if(ayarlarFile.value("general/arkaPlan").isNull())
+    {
+        ayarlarFile.setValue("general/arkaPlan", "false");
+    }
+    else
+    {
+        if(ayarlarFile.value("general/arkaPlan").value<QString>().contains("false"))
+        {
+            a.setStyle(QStyleFactory::create("windowsVista"));
+
+            w.setWindowIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/NoMedia.png"));
+            a.setWindowIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/NoMedia.png"));
+        }
+        else
+        {
+            a.setStyle(QStyleFactory::create("windows11"));
+
+            w.setWindowIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/NoMedia.png"));
+            a.setWindowIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/NoMedia.png"));
+        }
+    }
     w.setWindowTitle("Data Music Player");
     //w.show();
     return QApplication::exec();

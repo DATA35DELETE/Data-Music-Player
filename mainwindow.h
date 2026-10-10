@@ -25,6 +25,8 @@
 #include <QDesktopServices>
 #include <QPainterPath>
 #include <QPainter>
+#include <QSettings>
+#include <QStyleFactory>
 
 #include <filesystem>
 #include <vector>
@@ -66,6 +68,8 @@ public:
 
     void medyaIndirme(QString);
 
+    void ayarlariYukle();
+
 public slots:
     void medyaOynatmaKontrol_clicked();
     void medyaSlider_positionChanged(qint64);
@@ -74,6 +78,7 @@ public slots:
     void medyaSesSeviyesi_sliderMoved(int);
     void medyaMod_clicked();
     void oynatici_mediaStatusChanged(QMediaPlayer::MediaStatus);
+    void oynatici_mediaStatusChanged2(QMediaPlayer::MediaStatus);
     void medyaArama_textChanged(QString);
     void medyalar_itemActivated(QListWidgetItem*);
     void oynatmaListeleri_clicked();
@@ -83,6 +88,8 @@ public slots:
     void ytDlpIndirme_clicked2();
 
     void ffmpegIndirme_clicked();
+
+    void ayarlariKaydet_clicked();
 
 
 private:

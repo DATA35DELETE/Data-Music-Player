@@ -44,6 +44,8 @@ MainWindow *mw2;
 
 QNetworkAccessManager *mngr;
 
+bool karanlikTema = true;
+
 MainWindow::MainWindow(QWidget * parent)
     : QMainWindow(parent),
 ui(new Ui::MainWindow) {
@@ -63,9 +65,35 @@ ui(new Ui::MainWindow) {
 
     cikis->setVolume(ui->medyaSesSeviyesi->value());
 
+    QDir().mkdir("../ffmpeg");
+    QDir().mkdir("../musics");
+    QDir().mkdir("../playlistsImages");
+    QDir().mkdir("../playlists");
+    QDir().mkdir("../playlistTumbnails");
+    QDir().mkdir("../thumbnails");
+    QDir().mkdir("../yt-dlp");
+
     medyalariListele();
 
     favorileriListele();
+
+    ayarlariYukle();
+
+    if(!karanlikTema)
+    {
+        ui->medyaOynatmaKontrol->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/baslatma.png"));
+        ui->medyaMod->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/dongu.png"));
+        ui->label->setPixmap(QPixmap(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/sesSeviyesi.png"));
+        ui->label_2->setPixmap(QPixmap(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/arama.png"));
+        ui->medyaYenile->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/yenile.png"));
+        ui->medyaICon->setPixmap(QPixmap(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/NoMedia.png"));
+        ui->label_7->setPixmap(QPixmap(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/indirme.png"));
+        ui->ytDlpIndirme->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/indirme.png"));
+        ui->ffmpegIndirme->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/indirme.png"));
+        ui->nodeJsIndirme->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/indirme.png"));
+        ui->medyaCikar->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/penceredenCikar.png"));
+        yuzenPencere->medyaYuzenOynatma->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/baslatma.png"));
+    }
 
     QWidget *girisSecenegi = new QWidget(this);
     QHBoxLayout *girisSecenegiLayout = new QHBoxLayout(girisSecenegi);
@@ -115,6 +143,18 @@ ui(new Ui::MainWindow) {
 
     ui->secenekler->setItemWidget(indirmeItem, indirmeSecenegi);
 
+    QWidget *ayarlarSecenegi = new QWidget(this);
+    QHBoxLayout *ayarlarSecenegiLayout = new QHBoxLayout(ayarlarSecenegi);
+    ayarlarSecenegi->setMinimumSize(QSize(0, 40));
+
+    QPushButton *ayarlar = new QPushButton("Ayarlar");
+    ayarlarSecenegiLayout->addWidget(ayarlar);
+
+    QListWidgetItem *ayarlarItem = new QListWidgetItem(ui->secenekler);
+    ayarlarItem->setSizeHint(ayarlarSecenegi->sizeHint());
+
+    ui->secenekler->setItemWidget(ayarlarItem, ayarlarSecenegi);
+
     connect(ui->medyaOynatmaKontrol, &QPushButton::clicked, this,&MainWindow::medyaOynatmaKontrol_clicked);
     connect(oynatici, &QMediaPlayer::positionChanged, this, &MainWindow::medyaSlider_positionChanged);
     connect(ui->medyaSlider, &QSlider::sliderMoved, this, &MainWindow::medyaSlider_sliderMoved);
@@ -149,7 +189,7 @@ ui(new Ui::MainWindow) {
     });
     connect(ui->medyaSesSeviyesi, &QSlider::sliderMoved, this, &MainWindow::medyaSesSeviyesi_sliderMoved);
     connect(ui->medyaMod, &QPushButton::clicked, this, &MainWindow::medyaMod_clicked);
-    connect(oynatici, &QMediaPlayer::mediaStatusChanged, this, &MainWindow::oynatici_mediaStatusChanged,Qt::UniqueConnection);
+    connect(oynatici, &QMediaPlayer::mediaStatusChanged, this, &MainWindow::oynatici_mediaStatusChanged);
 
 #if defined(Q_OS_WIN)
     QHotkey *playPauseShortcut = new QHotkey(QHotkey::NativeShortcut{0xB3, 0}, true, this);
@@ -225,10 +265,15 @@ ui(new Ui::MainWindow) {
     {
         ui->anaPencereleri->setCurrentWidget(ui->medyaIndirme);
     });
+    connect(ayarlar, &QPushButton::clicked, this,
+    [this]()
+    {
+        ui->anaPencereleri->setCurrentWidget(ui->ayarlarPage);
+    });
     connect(ui->playlistsArama, &QLineEdit::textChanged, this, &MainWindow::medyaArama_textChanged);
     connect(ui->actionEkle, &QAction::triggered, this, [this](){this->setVisible(false); oynatmaListesiCreate->oynatmaListesiOlusturmaBaslangic();});
     connect(ui->actionKald_r, &QAction::triggered, this, [this](){this->setVisible(false); oynatmaListesiDelete->oynatmaListesiSilmeBaslangic();});
-    connect(ui->medyaCikar, &QPushButton::clicked, this, [this](){this->setVisible(false); yuzenPencere->medyaYuzen_baslangic(); isYuzenPencere = true;});
+    connect(ui->medyaCikar, &QPushButton::clicked, this, [this](){this->setVisible(false); yuzenPencere->medyaYuzen_baslangic(); isYuzenPencere = true;  oynatici_mediaStatusChanged2(QMediaPlayer::MediaStatus::LoadedMedia); });
 
     connect(yuzenPencere->medyaYuzenOynatma, &QPushButton::clicked, this, &MainWindow::medyaOynatmaKontrol_clicked);
     connect(yuzenPencere->medyaYuzenOnceki, &QPushButton::clicked, this, [this](){
@@ -259,7 +304,9 @@ ui(new Ui::MainWindow) {
             medyaCal(true);
         }
     });
-    connect(yuzenPencere->medyaYuzenKapat, &QPushButton::clicked, this, [this](){yuzenPencere->setVisible(false); isYuzenPencere = false; this->setVisible(true);});
+    connect(yuzenPencere->medyaYuzenKapat, &QPushButton::clicked, this, [this](){yuzenPencere->setVisible(false); isYuzenPencere = false;
+        mw2->oynatici_mediaStatusChanged2(QMediaPlayer::MediaStatus::LoadedMedia);
+; this->setVisible(true);});
     connect(ui->actionDosya_Ekle, &QAction::triggered, this, &MainWindow::actionDosya_Ekle_triggered);
     connect(ui->actionM_zik_kar, &QAction::triggered, this, [this](){this->setVisible(false); medyaCikar->muzikCikarOlusturmaBaslangic();});
 
@@ -269,7 +316,10 @@ ui(new Ui::MainWindow) {
     else
     {
         ui->ytDlpIndirme->setText("Yt-Dlp Aracını Güncelle");
-        ui->ytDlpIndirme->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/dongu.png"));
+        if(karanlikTema)
+            ui->ytDlpIndirme->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/dongu.png"));
+        else
+            ui->ytDlpIndirme->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/dongu.png"));
         connect(ui->ytDlpIndirme, &QPushButton::clicked, this, &MainWindow::ytDlpIndirme_clicked2);
     }
 
@@ -298,7 +348,10 @@ ui(new Ui::MainWindow) {
     else
     {
         ui->ytDlpIndirme->setText("Yt-Dlp Aracını Güncelle");
-        ui->ytDlpIndirme->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/dongu.png"));
+        if(karanlikTema)
+            ui->ytDlpIndirme->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/dongu.png"));
+        else
+            ui->ytDlpIndirme->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/dongu.png"));
         connect(ui->ytDlpIndirme, &QPushButton::clicked, this, &MainWindow::ytDlpIndirme_clicked2);
     }
 
@@ -321,6 +374,9 @@ ui(new Ui::MainWindow) {
     {
         QDesktopServices::openUrl(QUrl("https://nodejs.org/tr/download"));
     });
+
+    connect(ui->ayarlariKaydet, &QPushButton::clicked, this, &MainWindow::ayarlariKaydet_clicked);
+    connect(oynatici, &QMediaPlayer::mediaStatusChanged, this, &MainWindow::oynatici_mediaStatusChanged2);
 }
 
 MainWindow::~MainWindow()
@@ -333,10 +389,16 @@ void MainWindow::medyaOynatmaKontrol_clicked()
     if(isPlay)
     {
 
-        if(!isYuzenPencere)
-            ui->medyaOynatmaKontrol->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/baslatma.png"));
-        else
-            yuzenPencere->medyaYuzenOynatma->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/baslatma.png"));
+        if(!isYuzenPencere){
+            if(karanlikTema)
+                ui->medyaOynatmaKontrol->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/baslatma.png"));
+            else
+                ui->medyaOynatmaKontrol->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/baslatma.png"));}
+        else{
+            if(karanlikTema)
+                yuzenPencere->medyaYuzenOynatma->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/baslatma.png"));
+            else
+                yuzenPencere->medyaYuzenOynatma->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/baslatma.png"));}
 
         if(mod == 1)
         {
@@ -351,10 +413,17 @@ void MainWindow::medyaOynatmaKontrol_clicked()
     }
     else
     {
-        if(!isYuzenPencere)
-            ui->medyaOynatmaKontrol->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/duraklatma.png"));
-        else
-            yuzenPencere->medyaYuzenOynatma->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/duraklatma.png"));
+        if(!isYuzenPencere){
+            if(karanlikTema)
+                ui->medyaOynatmaKontrol->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/duraklatma.png"));
+            else
+                ui->medyaOynatmaKontrol->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/duraklatma.png"));
+            }
+        else{
+            if(karanlikTema)
+                yuzenPencere->medyaYuzenOynatma->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/duraklatma.png"));
+            else
+                yuzenPencere->medyaYuzenOynatma->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/duraklatma.png"));}
 
         if(mod == 1)
         {
@@ -434,71 +503,6 @@ void MainWindow::medyaSlider_positionChanged(qint64 deger)
             double musicYuzdeHesaplama = (double)deger / (double)maxMusicSaniyesi;
 
             yuzenPencere->medyaYuzenBar->setProperty("value", (int)(musicYuzdeHesaplama * 100));
-
-            if(oynatici->metaData().value(QMediaMetaData::ThumbnailImage).isNull())
-            {
-                yuzenPencere->medyaYuzenIco->setPixmap(QPixmap(":/medyaKontrol/assets/medyaKontrol/NoMedia.png"));
-            }
-            else
-            {
-                oynatici->metaData().value(QMediaMetaData::ThumbnailImage).value<QImage>().save("../temp2.jpeg", "JPEG");
-
-                QImageReader rd("../temp2.jpeg");
-                rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
-
-                //yuzenPencere->medyaYuzenIco->setPixmap(QPixmap::fromImage(rd.read()));
-
-                QImage readBoku = rd.read();
-
-                QPixmap yuvarlak(readBoku.size());
-                yuvarlak.fill(Qt::transparent);
-
-                QPainter cizici(&yuvarlak);
-                cizici.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-
-                QPainterPath ciziciPath;
-                ciziciPath.addRoundedRect(yuvarlak.rect(), 60, 60);
-
-                cizici.setClipPath(ciziciPath);
-                cizici.drawPixmap(0,0, QPixmap::fromImage(readBoku));
-
-                yuzenPencere->medyaYuzenIco->setPixmap(yuvarlak);
-            }
-
-            if(!isPlaylists)
-            {
-                yuzenPencere->medyaYuzenIsim->setText(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3"));
-                yuzenPencere->setWindowTitle(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3"));
-                yuzenPencere->medyaYuzenSanatci->setText(QString::fromStdWString(sanacilar.at(gecerliIndex)));
-                ui->medyalar->setCurrentRow(gecerliIndex);
-            }
-            else
-            {
-                yuzenPencere->medyaYuzenIsim->setText(QString::fromStdWString(playlistsMedyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3"));
-                yuzenPencere->setWindowTitle(QString::fromStdWString(playlistsMedyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3"));
-                yuzenPencere->medyaYuzenSanatci->setText(QString::fromStdWString(playlistsSanacilar.at(gecerliIndex)));
-                ui->playlistsList->setCurrentRow(gecerliIndex);
-            }
-
-            if(oynatici->position() == oynatici->duration())
-            {
-                medyaCal(true);
-            }
-
-            //yuzenPencere->yuzenMedyaArkaPlan->setStyleSheet("#centralwidget{border-image: url(../temp2.jpeg) 0 0 0 0 stretch stretch;}");
-
-            QImage arkaplanRengiHesaplama("../temp2.jpeg", "JPEG");
-
-            unsigned long long r = 0, b = 0, g = 0;
-
-            for(int iii = 0; iii < arkaplanRengiHesaplama.height(); iii++)
-            {
-                r += arkaplanRengiHesaplama.pixelColor(iii, iii).red();
-                g += arkaplanRengiHesaplama.pixelColor(iii, iii).green();
-                b += arkaplanRengiHesaplama.pixelColor(iii, iii).blue();
-            }
-
-            yuzenPencere->yuzenMedyaArkaPlan->setStyleSheet(QString("#centralwidget{background-color: %1;}").arg(QColor(r / arkaplanRengiHesaplama.height(), g / arkaplanRengiHesaplama.height(), b / arkaplanRengiHesaplama.height()).name()));
         }
         else
         {
@@ -561,109 +565,9 @@ void MainWindow::medyaSlider_positionChanged(qint64 deger)
 
             ui->medyaGuncelSure->setProperty("text", prompt.c_str());
 
-            guncelSaniye = (int)((float)oynatici->duration() / 1000);
-
-            saat = 0;
-            dakika = 0;
-
-            while(guncelSaniye >= 60)
-            {
-                guncelSaniye -= 60;
-                dakika++;
-            }
-            while(dakika >= 60)
-            {
-                dakika -= 60;
-                saat++;
-            }
-
-            prompt = "";
-
-            if(saat < 10)
-            {
-                prompt += "0";
-                prompt += saat + 48;
-            }
-            else
-            {
-                prompt += (saat / 10) + 48;
-                prompt += ((((float)saat / (float)10) - ((int)saat / (int)10)) * 10) + 48;
-            }
-            prompt += ":";
-            if(dakika < 10)
-            {
-                prompt += "0";
-                prompt += dakika + 48;
-            }
-            else
-            {
-                prompt += (dakika / 10) + 48;
-                prompt += ((((float)dakika / (float)10) - ((int)dakika / (int)10)) * 10) + 48;
-            }
-            prompt += ":";
-            if(guncelSaniye < 10)
-            {
-                prompt += "0";
-                prompt += guncelSaniye + 48;
-            }
-            else
-            {
-                prompt += (guncelSaniye / 10) + 48;
-                prompt += ((((float)guncelSaniye / (float)10) - ((int)guncelSaniye / (int)10)) * 10) + 48;
-            }
-
-            ui->medyaSuresi->setProperty("text", prompt.c_str());
-
             if(oynatici->position() == oynatici->duration())
             {
                 medyaCal(true);
-            }
-
-            if(oynatici->metaData().value(QMediaMetaData::ThumbnailImage).isNull())
-            {
-                ui->medyaICon->setPixmap(QPixmap(":/medyaKontrol/assets/medyaKontrol/NoMedia.png"));
-            }
-            else
-            {
-                //ui->medyaICon->setPixmap(QPixmap::fromImage(oynatici->metaData().value(QMediaMetaData::ThumbnailImage).value<QImage>()));
-
-                oynatici->metaData().value(QMediaMetaData::ThumbnailImage).value<QImage>().save("../temp2.jpeg", "JPEG");
-
-                QImageReader rd("../temp2.jpeg");
-                rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
-
-                //ui->medyaICon->setPixmap(QPixmap::fromImage(rd.read()));
-
-                QImage readBoku = rd.read();
-
-                QPixmap yuvarlak(readBoku.size());
-                yuvarlak.fill(Qt::transparent);
-
-                QPainter cizici(&yuvarlak);
-                cizici.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-
-                QPainterPath ciziciPath;
-                ciziciPath.addRoundedRect(yuvarlak.rect(), 60, 60);
-
-                cizici.setClipPath(ciziciPath);
-                cizici.drawPixmap(0,0, QPixmap::fromImage(readBoku));
-
-                ui->medyaICon->setPixmap(yuvarlak);
-            }
-
-            if(!isPlaylists)
-            {
-                ui->medyaIsim->setText(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3"));
-                ui->medyaSanatci->setText(QString::fromStdWString(sanacilar.at(gecerliIndex)));
-                ui->statusbar->showMessage(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3").append(" | ").append(QString::fromStdWString(sanacilar.at(gecerliIndex))));
-                ui->medyalar->setCurrentRow(gecerliIndex);
-            }
-            else
-            {
-                ui->medyaIsim->setText(QString::fromStdWString(playlistsMedyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3"));
-                ui->medyaSanatci->setText(QString::fromStdWString(playlistsSanacilar.at(gecerliIndex)));
-                ui->statusbar->showMessage(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3").append(" | ").append(QString::fromStdWString(sanacilar.at(gecerliIndex))));
-                ui->playlistsList->setCurrentRow(gecerliIndex);
             }
         }
     }
@@ -791,19 +695,29 @@ void MainWindow::medyaMod_clicked()
 {
     if(mod == 0)
     {
-        ui->medyaMod->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/tekrar.png"));
+        if(karanlikTema)
+            ui->medyaMod->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/tekrar.png"));
+        else
+            ui->medyaMod->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/tekrar.png"));
+
 
         mod = 1;
     }
     else if(mod == 1)
     {
-        ui->medyaMod->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/karisik.png"));
+        if(karanlikTema)
+            ui->medyaMod->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/karisik.png"));
+        else
+            ui->medyaMod->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/karisik.png"));
 
         mod = 2;
     }
     else if(mod == 2)
     {
-        ui->medyaMod->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/dongu.png"));
+        if(karanlikTema)
+            ui->medyaMod->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/karisik.png"));
+        else
+            ui->medyaMod->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/karisik.png"));
 
         mod = 0;
     }
@@ -850,8 +764,16 @@ void MainWindow::oynatici_mediaStatusChanged(QMediaPlayer::MediaStatus status)
                     //QFile::remove(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator, "../thumbnails/").replace(".mp3", ".png"));
                     //QFile::copy(":/medyaKontrol/assets/medyaKontrol/NoMedia.png", QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator, "../thumbnails/").replace(".mp3", ".png"));
 
-                    QImageReader rd = QImageReader(":/medyaKontrol/assets/medyaKontrol/NoMedia.png");
-                    rd.read().save(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../thumbnails/").replace(".mp3", ".jpeg"), "JPEG");
+                    if(karanlikTema)
+                    {
+                        QImageReader rd = QImageReader(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/NoMedia.png");
+                        rd.read().save(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../thumbnails/").replace(".mp3", ".jpeg"), "JPEG");
+                    }
+                    else
+                    {
+                        QImageReader rd = QImageReader(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/NoMedia.png");
+                        rd.read().save(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../thumbnails/").replace(".mp3", ".jpeg"), "JPEG");
+                    }
                 }
                 if(!oynatici->metaData().value(QMediaMetaData::ContributingArtist).isNull())
                 {
@@ -866,7 +788,10 @@ void MainWindow::oynatici_mediaStatusChanged(QMediaPlayer::MediaStatus status)
                 }
 
                 yuklenmeEkrani->setValue(yuklenmeEkrani->value() + 1);
-                yuklenmeEkrani->setWindowIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/NoMedia.png"));
+                if(karanlikTema)
+                    yuklenmeEkrani->setWindowIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/NoMedia.png"));
+                else
+                    yuklenmeEkrani->setWindowIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/NoMedia.png"));
 
                 oynaticiSayici++;
 
@@ -891,8 +816,16 @@ void MainWindow::oynatici_mediaStatusChanged(QMediaPlayer::MediaStatus status)
                 }
                 else
                 {
-                    QImageReader rd = QImageReader(":/medyaKontrol/assets/medyaKontrol/NoMedia.png");
-                    rd.read().save(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../thumbnails/").replace(".mp3", ".jpeg"), "JPEG");
+                    if(karanlikTema)
+                    {
+                        QImageReader rd = QImageReader(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/NoMedia.png");
+                        rd.read().save(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../thumbnails/").replace(".mp3", ".jpeg"), "JPEG");
+                    }
+                    else
+                    {
+                        QImageReader rd = QImageReader(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/NoMedia.png");
+                        rd.read().save(QString::fromStdWString(medyalar.at(oynaticiSayici)).replace("../musics" fileSeparator,"../thumbnails/").replace(".mp3", ".jpeg"), "JPEG");
+                    }
                 }
 
                 if(!oynatici->metaData().value(QMediaMetaData::ContributingArtist).isNull())
@@ -908,7 +841,10 @@ void MainWindow::oynatici_mediaStatusChanged(QMediaPlayer::MediaStatus status)
                 }
 
                 yuklenmeEkrani->setValue(yuklenmeEkrani->value() + 1);
-                yuklenmeEkrani->setWindowIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/NoMedia.png"));
+                if(karanlikTema)
+                    yuklenmeEkrani->setWindowIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/NoMedia.png"));
+                else
+                    yuklenmeEkrani->setWindowIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/NoMedia.png"));
 
                 oynaticiSayici++;
 
@@ -956,9 +892,19 @@ void MainWindow::oynatici_mediaStatusChanged_altSistem()
 
             QPushButton *favoriButon = new QPushButton();
             if(favoriMedyalar.contains(anaWidget->toolTip().toStdWString()))
-                favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favori.png"));
+            {
+                if(karanlikTema)
+                    favoriButon->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/favori.png"));
+                else
+                    favoriButon->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/favori.png"));
+            }
             else
-                favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favoriNo.png"));
+            {
+                if(karanlikTema)
+                    favoriButon->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/favoriNo.png"));
+                else
+                    favoriButon->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/favoriNo.png"));
+            }
             favoriButon->setMaximumSize(QSize(25,25));
             favoriButon->setIconSize(QSize(20,20));
             connect(favoriButon, &QPushButton::clicked, this,
@@ -970,13 +916,20 @@ void MainWindow::oynatici_mediaStatusChanged_altSistem()
                 {
                     favoriMedyalar.remove(std::distance(favoriMedyalar.begin(),std::find(favoriMedyalar.begin(), favoriMedyalar.end(), anaWidget->toolTip().toStdWString())));
 
-                    favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favoriNo.png"));
+                    if(karanlikTema)
+                        favoriButon->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/favoriNo.png"));
+                    else
+                        favoriButon->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/favoriNo.png"));
+
                 }
                 else
                 {
                     favoriMedyalar.append(QString(anaWidget->toolTip()).toStdWString());
 
-                    favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favori.png"));
+                    if(karanlikTema)
+                        favoriButon->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/favori.png"));
+                    else
+                        favoriButon->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/favori.png"));
                 }
 
                 favorileriYaz();
@@ -1030,9 +983,19 @@ void MainWindow::oynatici_mediaStatusChanged_altSistem()
 
             QPushButton *favoriButon = new QPushButton();
             if(favoriMedyalar.contains(anaWidget->toolTip().toStdWString()))
-                favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favori.png"));
+            {
+                if(karanlikTema)
+                    favoriButon->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/favori.png"));
+                else
+                    favoriButon->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/favori.png"));
+            }
             else
-                favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favoriNo.png"));
+            {
+                if(karanlikTema)
+                    favoriButon->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/favoriNo.png"));
+                else
+                    favoriButon->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/favoriNo.png"));
+            }
             favoriButon->setMaximumSize(QSize(25,25));
             favoriButon->setIconSize(QSize(20,20));
             connect(favoriButon, &QPushButton::clicked, this,
@@ -1044,13 +1007,20 @@ void MainWindow::oynatici_mediaStatusChanged_altSistem()
                         {
                             favoriMedyalar.remove(std::distance(favoriMedyalar.begin(),std::find(favoriMedyalar.begin(), favoriMedyalar.end(), anaWidget->toolTip().toStdWString())));
 
-                            favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favoriNo.png"));
+                            if(karanlikTema)
+                                favoriButon->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/favoriNo.png"));
+                            else
+                                favoriButon->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/favoriNo.png"));
+
                         }
                         else
                         {
                             favoriMedyalar.append(QString(anaWidget->toolTip()).toStdWString());
 
-                            favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favori.png"));
+                            if(karanlikTema)
+                                favoriButon->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/favori.png"));
+                            else
+                                favoriButon->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/favori.png"));
                         }
 
                         favorileriYaz();
@@ -1120,9 +1090,19 @@ void MainWindow::medyaArama_textChanged(QString deger)
 
                 QPushButton *favoriButon = new QPushButton();
                 if(favoriMedyalar.contains(anaWidget->toolTip().toStdWString()))
-                    favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favori.png"));
+                {
+                    if(karanlikTema)
+                        favoriButon->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/favori.png"));
+                    else
+                        favoriButon->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/favori.png"));
+                }
                 else
-                    favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favoriNo.png"));
+                {
+                    if(karanlikTema)
+                        favoriButon->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/favoriNo.png"));
+                    else
+                        favoriButon->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/favoriNo.png"));
+                }
                 favoriButon->setMaximumSize(QSize(25,25));
                 favoriButon->setIconSize(QSize(20,20));
                 connect(favoriButon, &QPushButton::clicked, this,
@@ -1130,18 +1110,25 @@ void MainWindow::medyaArama_textChanged(QString deger)
                         {
                             favorileriListele();
 
-                            if(favoriMedyalar.contains(anaWidget->toolTip().toStdWString()))
-                            {
-                                favoriMedyalar.remove(std::distance(favoriMedyalar.begin(),std::find(favoriMedyalar.begin(), favoriMedyalar.end(), anaWidget->toolTip().toStdWString())));
+                    if(favoriMedyalar.contains(anaWidget->toolTip().toStdWString()))
+                    {
+                        favoriMedyalar.remove(std::distance(favoriMedyalar.begin(),std::find(favoriMedyalar.begin(), favoriMedyalar.end(), anaWidget->toolTip().toStdWString())));
 
-                                favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favoriNo.png"));
-                            }
-                            else
-                            {
-                                favoriMedyalar.append(QString(anaWidget->toolTip()).toStdWString());
+                        if(karanlikTema)
+                            favoriButon->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/favoriNo.png"));
+                        else
+                            favoriButon->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/favoriNo.png"));
 
-                                favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favori.png"));
-                            }
+                    }
+                    else
+                    {
+                        favoriMedyalar.append(QString(anaWidget->toolTip()).toStdWString());
+
+                        if(karanlikTema)
+                            favoriButon->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/favori.png"));
+                        else
+                            favoriButon->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/favori.png"));
+                    }
 
                             favorileriYaz();
                         });
@@ -1195,9 +1182,19 @@ void MainWindow::medyaArama_textChanged(QString deger)
 
                 QPushButton *favoriButon = new QPushButton();
                 if(favoriMedyalar.contains(anaWidget->toolTip().toStdWString()))
-                    favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favori.png"));
+                {
+                    if(karanlikTema)
+                        favoriButon->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/favori.png"));
+                    else
+                        favoriButon->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/favori.png"));
+                }
                 else
-                    favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favoriNo.png"));
+                {
+                    if(karanlikTema)
+                        favoriButon->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/favoriNo.png"));
+                    else
+                        favoriButon->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/favoriNo.png"));
+                }
                 favoriButon->setMaximumSize(QSize(25,25));
                 favoriButon->setIconSize(QSize(20,20));
                 connect(favoriButon, &QPushButton::clicked, this,
@@ -1205,18 +1202,25 @@ void MainWindow::medyaArama_textChanged(QString deger)
                         {
                             favorileriListele();
 
-                            if(favoriMedyalar.contains(anaWidget->toolTip().toStdWString()))
-                            {
-                                favoriMedyalar.remove(std::distance(favoriMedyalar.begin(),std::find(favoriMedyalar.begin(), favoriMedyalar.end(), anaWidget->toolTip().toStdWString())));
+                    if(favoriMedyalar.contains(anaWidget->toolTip().toStdWString()))
+                    {
+                        favoriMedyalar.remove(std::distance(favoriMedyalar.begin(),std::find(favoriMedyalar.begin(), favoriMedyalar.end(), anaWidget->toolTip().toStdWString())));
 
-                                favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favoriNo.png"));
-                            }
-                            else
-                            {
-                                favoriMedyalar.append(QString(anaWidget->toolTip()).toStdWString());
+                        if(karanlikTema)
+                            favoriButon->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/favoriNo.png"));
+                        else
+                            favoriButon->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/favoriNo.png"));
 
-                                favoriButon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/favori.png"));
-                            }
+                    }
+                    else
+                    {
+                        favoriMedyalar.append(QString(anaWidget->toolTip()).toStdWString());
+
+                        if(karanlikTema)
+                            favoriButon->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/favori.png"));
+                        else
+                            favoriButon->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/favori.png"));
+                    }
 
                             favorileriYaz();
                         });
@@ -1519,7 +1523,26 @@ void MainWindow::ytDlpIndirme_clicked2()
 {
     ui->indirmeLog->setText(ui->indirmeLog->toPlainText().append("[Yt-Dlp]: Araç güncelleniyor..."));
 
-    std::system(qPrintable(QString(".." fileSeparator "yt-dlp" fileSeparator "yt-dlp.exe -U")));
+    QProcess *ytDlpIndirme = new QProcess(this);
+    connect(ytDlpIndirme, &QProcess::readyReadStandardOutput,
+            this,
+            [this, ytDlpIndirme]()
+            {
+                QString cikti = ytDlpIndirme->readAllStandardOutput();
+
+                ui->indirmeLog->append(cikti);
+            });
+
+    connect(ytDlpIndirme, &QProcess::readyReadStandardError,
+            this,
+            [this, ytDlpIndirme]()
+            {
+                QString hata = ytDlpIndirme->readAllStandardError();
+
+                ui->indirmeLog->append(hata);
+            });
+
+    ytDlpIndirme->startDetached("..\\yt-dlp\\yt-dlp", {"-U"});
 
     ui->indirmeLog->setText(ui->indirmeLog->toPlainText().append("OK\n"));
 }
@@ -1602,7 +1625,10 @@ void MainWindow::medyaIndirme(QString url)
         connect(ytDlpIndirme, &QProcess::finished, this,
         [](int, QProcess::ExitStatus)
         {
-            qDebug() << "annneee bitttiii";
+            QProcess process;
+            process.startDetached("dataMusicPlayer",QStringList());
+
+            qApp->quit();
         });
         connect(ytDlpIndirme, &QProcess::readyReadStandardOutput,
                 this,
@@ -1659,5 +1685,234 @@ void MainWindow::medyaIndirme(QString url)
         ytDlpIndirme->start("../yt-dlp/yt-dlp", args);
 
 #endif
+    }
+}
+
+void MainWindow::ayarlariYukle()
+{
+    QSettings ayarlarFile("ayarlar.ini", QSettings::Format::IniFormat);
+
+    if(ayarlarFile.value("general/arkaPlan").isNull())
+    {
+        ayarlarFile.setValue("general/arkaPlan", "true");
+    }
+    else
+    {
+        if(ayarlarFile.value("general/arkaPlan").value<QString>().contains("false"))
+        {
+            karanlikTema = false;
+
+            ui->karanlikTema->setCheckState(Qt::Unchecked);
+        }
+        else
+        {
+            karanlikTema = true;
+
+            ui->karanlikTema->setCheckState(Qt::Checked);
+        }
+
+        qDebug() << karanlikTema;
+    }
+}
+
+void MainWindow::ayarlariKaydet_clicked()
+{
+    QSettings ayarlarFile("ayarlar.ini", QSettings::Format::IniFormat);
+    if(ui->karanlikTema->isChecked())
+    {
+        ayarlarFile.setValue("general/arkaPlan", "true");
+    }
+    else
+    {
+        ayarlarFile.setValue("general/arkaPlan", "false");
+    }
+
+    QProcess process;
+    process.startDetached("dataMusicPlayer",QStringList());
+
+    qApp->quit();
+}
+
+void MainWindow::oynatici_mediaStatusChanged2(QMediaPlayer::MediaStatus status)
+{
+    if(status == QMediaPlayer::MediaStatus::LoadedMedia && isReset == false)
+    {
+        if(isYuzenPencere)
+        {
+            if(oynatici->metaData().value(QMediaMetaData::ThumbnailImage).isNull())
+            {
+                if(karanlikTema)
+                    yuzenPencere->medyaYuzenIco->setPixmap(QPixmap(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/NoMedia.png"));
+                else
+                    yuzenPencere->medyaYuzenIco->setPixmap(QPixmap(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/NoMedia.png"));
+
+            }
+            else
+            {
+                oynatici->metaData().value(QMediaMetaData::ThumbnailImage).value<QImage>().save("../temp2.jpeg", "JPEG");
+
+                QImageReader rd("../temp2.jpeg");
+                rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
+
+                //yuzenPencere->medyaYuzenIco->setPixmap(QPixmap::fromImage(rd.read()));
+
+                QImage readBoku = rd.read();
+
+                QPixmap yuvarlak(readBoku.size());
+                yuvarlak.fill(Qt::transparent);
+
+                QPainter cizici(&yuvarlak);
+                cizici.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+
+                QPainterPath ciziciPath;
+                ciziciPath.addRoundedRect(yuvarlak.rect(), 60, 60);
+
+                cizici.setClipPath(ciziciPath);
+                cizici.drawPixmap(0,0, QPixmap::fromImage(readBoku));
+
+                yuzenPencere->medyaYuzenIco->setPixmap(yuvarlak);
+            }
+
+            if(!isPlaylists)
+            {
+                yuzenPencere->medyaYuzenIsim->setText(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3"));
+                yuzenPencere->setWindowTitle(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3"));
+                yuzenPencere->medyaYuzenSanatci->setText(QString::fromStdWString(sanacilar.at(gecerliIndex)));
+                ui->medyalar->setCurrentRow(gecerliIndex);
+            }
+            else
+            {
+                yuzenPencere->medyaYuzenIsim->setText(QString::fromStdWString(playlistsMedyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3"));
+                yuzenPencere->setWindowTitle(QString::fromStdWString(playlistsMedyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3"));
+                yuzenPencere->medyaYuzenSanatci->setText(QString::fromStdWString(playlistsSanacilar.at(gecerliIndex)));
+                ui->playlistsList->setCurrentRow(gecerliIndex);
+            }
+
+            if(oynatici->position() == oynatici->duration())
+            {
+                medyaCal(true);
+            }
+
+            //yuzenPencere->yuzenMedyaArkaPlan->setStyleSheet("#centralwidget{border-image: url(../temp2.jpeg) 0 0 0 0 stretch stretch;}");
+
+            QImage arkaplanRengiHesaplama("../temp2.jpeg", "JPEG");
+
+            unsigned long long r = 0, b = 0, g = 0;
+
+            for(int iii = 0; iii < arkaplanRengiHesaplama.height(); iii++)
+            {
+                r += arkaplanRengiHesaplama.pixelColor(iii, iii).red();
+                g += arkaplanRengiHesaplama.pixelColor(iii, iii).green();
+                b += arkaplanRengiHesaplama.pixelColor(iii, iii).blue();
+            }
+
+            yuzenPencere->yuzenMedyaArkaPlan->setStyleSheet(QString("#centralwidget{background-color: %1;}").arg(QColor(r / arkaplanRengiHesaplama.height(), g / arkaplanRengiHesaplama.height(), b / arkaplanRengiHesaplama.height()).name()));
+        }
+        else
+        {
+            int guncelSaniye = (int)((float)oynatici->duration() / 1000);
+
+            int saat = 0;
+            int dakika = 0;
+
+            while(guncelSaniye >= 60)
+            {
+                guncelSaniye -= 60;
+                dakika++;
+            }
+            while(dakika >= 60)
+            {
+                dakika -= 60;
+                saat++;
+            }
+
+            std::string prompt = "";
+
+            if(saat < 10)
+            {
+                prompt += "0";
+                prompt += saat + 48;
+            }
+            else
+            {
+                prompt += (saat / 10) + 48;
+                prompt += ((((float)saat / (float)10) - ((int)saat / (int)10)) * 10) + 48;
+            }
+            prompt += ":";
+            if(dakika < 10)
+            {
+                prompt += "0";
+                prompt += dakika + 48;
+            }
+            else
+            {
+                prompt += (dakika / 10) + 48;
+                prompt += ((((float)dakika / (float)10) - ((int)dakika / (int)10)) * 10) + 48;
+            }
+            prompt += ":";
+            if(guncelSaniye < 10)
+            {
+                prompt += "0";
+                prompt += guncelSaniye + 48;
+            }
+            else
+            {
+                prompt += (guncelSaniye / 10) + 48;
+                prompt += ((((float)guncelSaniye / (float)10) - ((int)guncelSaniye / (int)10)) * 10) + 48;
+            }
+
+            ui->medyaSuresi->setProperty("text", prompt.c_str());
+
+            if(oynatici->metaData().value(QMediaMetaData::ThumbnailImage).isNull())
+            {
+                if(karanlikTema)
+                    ui->medyaICon->setPixmap(QPixmap(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/NoMedia.png"));
+                else
+                    ui->medyaICon->setPixmap(QPixmap(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/NoMedia.png"));
+
+            }
+            else
+            {
+                //ui->medyaICon->setPixmap(QPixmap::fromImage(oynatici->metaData().value(QMediaMetaData::ThumbnailImage).value<QImage>()));
+
+                oynatici->metaData().value(QMediaMetaData::ThumbnailImage).value<QImage>().save("../temp2.jpeg", "JPEG");
+
+                QImageReader rd("../temp2.jpeg");
+                rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
+
+                //ui->medyaICon->setPixmap(QPixmap::fromImage(rd.read()));
+
+                QImage readBoku = rd.read();
+
+                QPixmap yuvarlak(readBoku.size());
+                yuvarlak.fill(Qt::transparent);
+
+                QPainter cizici(&yuvarlak);
+                cizici.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+
+                QPainterPath ciziciPath;
+                ciziciPath.addRoundedRect(yuvarlak.rect(), 60, 60);
+
+                cizici.setClipPath(ciziciPath);
+                cizici.drawPixmap(0,0, QPixmap::fromImage(readBoku));
+
+                ui->medyaICon->setPixmap(yuvarlak);
+            }
+
+            if(!isPlaylists)
+            {
+                ui->medyaIsim->setText(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3"));
+                ui->medyaSanatci->setText(QString::fromStdWString(sanacilar.at(gecerliIndex)));
+                ui->statusbar->showMessage(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3").append(" | ").append(QString::fromStdWString(sanacilar.at(gecerliIndex))));
+                ui->medyalar->setCurrentRow(gecerliIndex);
+            }
+            else
+            {
+                ui->medyaIsim->setText(QString::fromStdWString(playlistsMedyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3"));
+                ui->medyaSanatci->setText(QString::fromStdWString(playlistsSanacilar.at(gecerliIndex)));
+                ui->statusbar->showMessage(QString::fromStdWString(medyalar.at(gecerliIndex)).remove("../musics" fileSeparator).remove(".mp3").append(" | ").append(QString::fromStdWString(sanacilar.at(gecerliIndex))));
+                ui->playlistsList->setCurrentRow(gecerliIndex);
+            }
+        }
     }
 }
