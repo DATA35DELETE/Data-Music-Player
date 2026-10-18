@@ -29,4 +29,8 @@
         <file>assets/medyaKontrol/aydinlik/tekrar.png</file>
         <file>assets/medyaKontrol/aydinlik/yenile.png</file>
     </qresource>
+    <qresource prefix="/">
+        <file>assets/icons/yukariOk.png</file>
+        <file>assets/icons/asagiOk.png</file>
+    </qresource>
 </RCC>

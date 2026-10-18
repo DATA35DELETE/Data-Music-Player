@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1260</width>
+    <width>1028</width>
     <height>611</height>
    </rect>
   </property>
@@ -35,9 +35,7 @@
    <bool>true</bool>
   </property>
   <property name="styleSheet">
-   <string notr="true">#medyaICon{
-	border-radius: 30px;
-}</string>
+   <string notr="true"/>
   </property>
   <property name="toolButtonStyle">
    <enum>Qt::ToolButtonStyle::ToolButtonFollowStyle</enum>
@@ -640,8 +638,39 @@
       </widget>
      </widget>
     </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_5">
+      <property name="font">
+       <font>
+        <pointsize>18</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Menüler</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QListWidget" name="secenekler">
+      <property name="minimumSize">
+       <size>
+        <width>200</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>150</width>
+        <height>16777215</height>
+       </size>
+      </property>
+     </widget>
+    </item>
     <item row="2" column="0" colspan="3">
-     <widget class="QWidget" name="widget" native="true">
+     <widget class="QFrame" name="frame">
       <property name="minimumSize">
        <size>
         <width>0</width>
@@ -761,9 +790,15 @@
        </item>
        <item row="0" column="10">
         <widget class="QLabel" name="medyaGuncelSure">
+         <property name="minimumSize">
+          <size>
+           <width>75</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="maximumSize">
           <size>
-           <width>65</width>
+           <width>75</width>
            <height>16777215</height>
           </size>
          </property>
@@ -858,33 +893,8 @@
       </layout>
      </widget>
     </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="label_5">
-      <property name="font">
-       <font>
-        <pointsize>18</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>Menüler</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QListWidget" name="secenekler">
-      <property name="maximumSize">
-       <size>
-        <width>150</width>
-        <height>16777215</height>
-       </size>
-      </property>
-     </widget>
-    </item>
     <item row="0" column="2" rowspan="2">
-     <widget class="QWidget" name="gridWidget" native="true">
+     <widget class="QFrame" name="gridFrame">
       <property name="minimumSize">
        <size>
         <width>200</width>
@@ -1035,8 +1045,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1260</width>
-     <height>21</height>
+     <width>1028</width>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuDosya">
@@ -1066,7 +1076,7 @@
    <property name="maximumSize">
     <size>
      <width>16777215</width>
-     <height>10</height>
+     <height>16777215</height>
     </size>
    </property>
   </widget>

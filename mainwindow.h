@@ -17,7 +17,7 @@
 #include <QListWidgetItem>
 #include <QLoggingCategory>
 #include <QDirIterator>
-#include "QHotkey/QHotKey"
+#include "QHotkey"
 #include <QProcess>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -27,6 +27,8 @@
 #include <QPainter>
 #include <QSettings>
 #include <QStyleFactory>
+#include <QtConcurrent>
+#include <QFuture>
 
 #include <filesystem>
 #include <vector>

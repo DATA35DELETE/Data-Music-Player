@@ -13,6 +13,7 @@ find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 find_package(Qt6 REQUIRED COMPONENTS Multimedia)
 find_package(Qt6 REQUIRED COMPONENTS Network)
+find_package(Qt6 REQUIRED COMPONENTS Concurrent)
 
 set(PROJECT_SOURCES
         main.cpp
@@ -50,7 +51,7 @@ else()
     endif()
 endif()
 
-target_link_libraries(dataMusicPlayer PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt6::Multimedia Qt6::Network)
+target_link_libraries(dataMusicPlayer PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt6::Multimedia Qt6::Network Qt6::Concurrent)
 
 target_sources(dataMusicPlayer PRIVATE
     QHotkey/qhotkey.h
