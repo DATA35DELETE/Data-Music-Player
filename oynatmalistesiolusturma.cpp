@@ -19,9 +19,7 @@ oynatmaListesiOlusturma::oynatmaListesiOlusturma(QWidget *parent)
 {
     ui->setupUi(this);
 
-    this->setWindowFlags(Qt::WindowType::CoverWindow | Qt::WindowType::WindowStaysOnTopHint);
-
-    this->setWindowIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/NoMedia.png"));
+    this->setWindowIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/NoMedia.png"));
 
     connect(ui->ekleIcon, &QPushButton::clicked, this, &oynatmaListesiOlusturma::oynatmaListesi_fotoSec);
     connect(ui->ekle, &QPushButton::clicked, this, &oynatmaListesiOlusturma::ekle_clicked);
@@ -37,7 +35,7 @@ void oynatmaListesiOlusturma::oynatmaListesiOlusturmaBaslangic()
 {
     ui->medyalar->clear();
     ui->isim->setText("oynatmaListesi");
-    ui->ekleIcon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/NoMedia.png"));
+    ui->ekleIcon->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/NoMedia.png"));
 
     std::vector<long long> medyalarZaman;
     int medyalarZamanCount = 0;
@@ -97,9 +95,9 @@ void oynatmaListesiOlusturma::oynatmaListesiOlusturmaBaslangic()
 
 void oynatmaListesiOlusturma::oynatmaListesi_fotoSec()
 {
-    QFileDialog fotoSecme;
+    QFileDialog fotoSecme(this);
 
-    fotoSecme.setWindowIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/NoMedia.png"));
+    fotoSecme.setWindowIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/NoMedia.png"));
     fotoSecme.setNameFilter("Fotoğraflar (*.png *.jpeg *.jpg)");
 
     fotoSecme.exec();
@@ -111,7 +109,7 @@ void oynatmaListesiOlusturma::oynatmaListesi_fotoSec()
     }
     else
     {
-        ui->ekleIcon->setIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/NoMedia.png"));
+        ui->ekleIcon->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/NoMedia.png"));
         ui->ekleIcon->setToolTip("notFound");
     }
 }
@@ -139,7 +137,7 @@ void oynatmaListesiOlusturma::ekle_clicked()
 
             if(ui->ekleIcon->toolTip() == "notFound")
             {
-                QFile::copy(":/medyaKontrol/assets/medyaKontrol/NoMedia.png", playlistName.replace("playlists", "playlistImages").replace(".txt", ".jpeg"));
+                QFile::copy(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/NoMedia.png", playlistName.replace("playlists", "playlistImages").replace(".txt", ".jpeg"));
             }
             else
             {
@@ -152,7 +150,7 @@ void oynatmaListesiOlusturma::ekle_clicked()
             this->setVisible(false);
 
             QMessageBox basarili(QMessageBox::Icon::Information, "Başarılı", "Başarılı! Oynatma listesiniz eklenmiştir.");
-            basarili.setWindowIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/NoMedia.png"));
+            basarili.setWindowIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/NoMedia.png"));
 
             basarili.exec();
 
@@ -161,7 +159,7 @@ void oynatmaListesiOlusturma::ekle_clicked()
         else
         {
             QMessageBox uyari2(QMessageBox::Icon::Critical, "İsmi Boş Olamaz", "İsmi boş olamaz! Lütfen bir isim giriniz.");
-            uyari2.setWindowIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/NoMedia.png"));
+            uyari2.setWindowIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/NoMedia.png"));
 
             uyari2.exec();
         }
@@ -169,7 +167,7 @@ void oynatmaListesiOlusturma::ekle_clicked()
     else
     {
         QMessageBox uyari1(QMessageBox::Icon::Critical, "Seçili Medya Bulunamadı", "Seçili medya bulunamadı! Lütfen medya seçiniz.");
-        uyari1.setWindowIcon(QIcon(":/medyaKontrol/assets/medyaKontrol/NoMedia.png"));
+        uyari1.setWindowIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/NoMedia.png"));
 
         uyari1.exec();
     }

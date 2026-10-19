@@ -29,6 +29,7 @@
 #include <QStyleFactory>
 #include <QtConcurrent>
 #include <QFuture>
+#include <QScroller>
 
 #include <filesystem>
 #include <vector>

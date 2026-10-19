@@ -7,7 +7,7 @@ medyaYuzenPencere::medyaYuzenPencere(QWidget *parent)
 {
     ui->setupUi(this);
 
-    this->setWindowFlags(Qt::WindowType::CoverWindow | Qt::WindowType::WindowStaysOnTopHint);
+    this->setWindowFlags({Qt::WindowType::WindowStaysOnTopHint, Qt::WindowType::NoTitleBarBackgroundHint});
 
     medyaYuzenOynatma = ui->medyaYuzenOynatma;
     medyaYuzenKapat = ui->medyaYuzenKapat;

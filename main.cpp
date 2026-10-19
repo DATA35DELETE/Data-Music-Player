@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
     QString mainQss;
-    QFile mainDotQss("../main.qss");
+    QFile mainDotQss(":/assets/qss/main.qss");
     if(mainDotQss.open(QFile::OpenModeFlag::ReadOnly))
     {
         QTextStream reader(&mainDotQss);
