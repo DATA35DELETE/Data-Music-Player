@@ -8,18 +8,6 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
 
-    QString mainQss;
-    QFile mainDotQss(":/assets/qss/main.qss");
-    if(mainDotQss.open(QFile::OpenModeFlag::ReadOnly))
-    {
-        QTextStream reader(&mainDotQss);
-
-        mainQss = reader.readAll();
-    }
-    mainDotQss.close();
-
-    a.setStyleSheet(mainQss);
-
     MainWindow w;
 
     QSettings ayarlarFile("ayarlar.ini", QSettings::Format::IniFormat);
@@ -34,12 +22,36 @@ int main(int argc, char *argv[])
         {
             a.setStyle(QStyleFactory::create("windowsVista"));
 
+            QString mainQss;
+            QFile mainDotQss(":/assets/qss/light.qss");
+            if(mainDotQss.open(QFile::OpenModeFlag::ReadOnly))
+            {
+                QTextStream reader(&mainDotQss);
+
+                mainQss = reader.readAll();
+            }
+            mainDotQss.close();
+
+            a.setStyleSheet(mainQss);
+
             w.setWindowIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/NoMedia.png"));
             a.setWindowIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/NoMedia.png"));
         }
         else
         {
             a.setStyle(QStyleFactory::create("windows11"));
+
+            QString mainQss;
+            QFile mainDotQss(":/assets/qss/dark.qss");
+            if(mainDotQss.open(QFile::OpenModeFlag::ReadOnly))
+            {
+                QTextStream reader(&mainDotQss);
+
+                mainQss = reader.readAll();
+            }
+            mainDotQss.close();
+
+            a.setStyleSheet(mainQss);
 
             w.setWindowIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/NoMedia.png"));
             a.setWindowIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/NoMedia.png"));

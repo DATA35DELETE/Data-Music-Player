@@ -32,6 +32,7 @@
     <qresource prefix="/">
         <file>assets/icons/yukariOk.png</file>
         <file>assets/icons/asagiOk.png</file>
-        <file>assets/qss/main.qss</file>
+        <file>assets/qss/dark.qss</file>
+        <file>assets/qss/light.qss</file>
     </qresource>
 </RCC>

@@ -83,8 +83,9 @@ ui(new Ui::MainWindow) {
 
     ayarlariYukle();
 
-    if(!karanlikTema)
+    /*if(!karanlikTema)
     {
+        ui->label_8->setPixmap(QPixmap(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/arama.png"));
         ui->medyaOynatmaKontrol->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/baslatma.png"));
         ui->medyaMod->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/dongu.png"));
         ui->label->setPixmap(QPixmap(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/sesSeviyesi.png"));
@@ -97,7 +98,7 @@ ui(new Ui::MainWindow) {
         ui->nodeJsIndirme->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/indirme.png"));
         ui->medyaCikar->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/penceredenCikar.png"));
         yuzenPencere->medyaYuzenOynatma->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/baslatma.png"));
-    }
+    }*/
 
     QWidget *girisSecenegi = new QWidget(this);
     QHBoxLayout *girisSecenegiLayout = new QHBoxLayout(girisSecenegi);
@@ -450,8 +451,6 @@ void MainWindow::medyalariListele()
 
         QFile itt(it.filePath());
         itt.remove();
-
-        qDebug() << itt.errorString();
     }
 
     medyalar.clear();
@@ -700,9 +699,9 @@ void MainWindow::medyaMod_clicked()
     if(mod == 0)
     {
         if(karanlikTema)
-            ui->medyaMod->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/dongu.png"));
+            ui->medyaMod->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/tekrar.png"));
         else
-            ui->medyaMod->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/dongu.png"));
+            ui->medyaMod->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/tekrar.png"));
 
 
         mod = 1;
@@ -710,18 +709,18 @@ void MainWindow::medyaMod_clicked()
     else if(mod == 1)
     {
         if(karanlikTema)
-            ui->medyaMod->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/tekrar.png"));
+            ui->medyaMod->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/karisik.png"));
         else
-            ui->medyaMod->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/tekrar.png"));
+            ui->medyaMod->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/karisik.png"));
 
         mod = 2;
     }
     else if(mod == 2)
     {
         if(karanlikTema)
-            ui->medyaMod->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/karisik.png"));
+            ui->medyaMod->setIcon(QIcon(":/medyaKontrol/karanlik/assets/medyaKontrol/karanlik/dongu.png"));
         else
-            ui->medyaMod->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/karisik.png"));
+            ui->medyaMod->setIcon(QIcon(":/medyaKontrol/aydinlik/assets/medyaKontrol/aydinlik/dongu.png"));
 
         mod = 0;
     }
@@ -886,8 +885,8 @@ void MainWindow::oynatici_mediaStatusChanged_altSistem()
             QLabel *medyaIcon = new QLabel();
             medyaIcon->setPixmap(QPixmap::fromImage(QImage(QString::fromStdWString(medyalar.at(medyaSayisi)).replace("../musics" fileSeparator,"../thumbnails/").replace(".mp3", ".jpeg"))));
             medyaIcon->setScaledContents(true);
-            medyaIcon->setMaximumSize(QSize(55,55));
-            medyaIcon->setMinimumSize(QSize(55,55));
+            medyaIcon->setMaximumSize(QSize(45,45));
+            medyaIcon->setMinimumSize(QSize(45,45));
             anaLayout->addWidget(medyaIcon);
 
             QLabel *medyaIsim = new QLabel();
@@ -978,8 +977,8 @@ void MainWindow::oynatici_mediaStatusChanged_altSistem()
             QLabel *medyaIcon = new QLabel();
             medyaIcon->setPixmap(QPixmap::fromImage(QImage(QString::fromStdWString(playlistsMedyalar.at(medyaSayisi)).replace("../musics" fileSeparator,"../playlistTumbnails/").replace(".mp3", ".jpeg"))));
             medyaIcon->setScaledContents(true);
-            medyaIcon->setMaximumSize(QSize(55,55));
-            medyaIcon->setMinimumSize(QSize(55,55));
+            medyaIcon->setMaximumSize(QSize(45,45));
+            medyaIcon->setMinimumSize(QSize(45,45));
             anaLayout->addWidget(medyaIcon);
 
             QLabel *medyaIsim = new QLabel();
@@ -1086,8 +1085,8 @@ void MainWindow::medyaArama_textChanged(QString deger)
                     QLabel *medyaIcon = new QLabel();
                     medyaIcon->setPixmap(QPixmap::fromImage(QImage(QString::fromStdWString(i).replace("../musics" fileSeparator,"../thumbnails/").replace(".mp3", ".jpeg"))));
                     medyaIcon->setScaledContents(true);
-                    medyaIcon->setMaximumSize(QSize(55,55));
-                    medyaIcon->setMinimumSize(QSize(55,55));
+                    medyaIcon->setMaximumSize(QSize(45,45));
+                    medyaIcon->setMinimumSize(QSize(45,45));
                     anaLayout->addWidget(medyaIcon);
 
                     QLabel *medyaIsim = new QLabel();
@@ -1179,8 +1178,8 @@ void MainWindow::medyaArama_textChanged(QString deger)
                     QLabel *medyaIcon = new QLabel();
                     medyaIcon->setPixmap(QPixmap::fromImage(QImage(QString::fromStdWString(i).replace("../musics" fileSeparator,"../playlistTumbnails/").replace(".mp3", ".jpeg"))));
                     medyaIcon->setScaledContents(true);
-                    medyaIcon->setMaximumSize(QSize(55,55));
-                    medyaIcon->setMinimumSize(QSize(55,55));
+                    medyaIcon->setMaximumSize(QSize(45,45));
+                    medyaIcon->setMinimumSize(QSize(45,45));
                     anaLayout->addWidget(medyaIcon);
 
                     QLabel *medyaIsim = new QLabel();
@@ -1297,8 +1296,8 @@ void MainWindow::oynatmaListeleri_clicked()
         QLabel *medyaIcon = new QLabel();
         medyaIcon->setPixmap(QPixmap::fromImage(QImage(QString::fromStdWString(i).replace("../playlists/","../playlistImages/").replace(".txt", ".jpeg"))));
         medyaIcon->setScaledContents(true);
-        medyaIcon->setMaximumSize(QSize(55,55));
-        medyaIcon->setMinimumSize(QSize(55,55));
+        medyaIcon->setMaximumSize(QSize(45,45));
+        medyaIcon->setMinimumSize(QSize(45,45));
         oynatmaListesiSecenegiLayout->addWidget(medyaIcon);
 
         QLabel *medyaIsim = new QLabel();
@@ -1331,14 +1330,12 @@ void MainWindow::oynatmaListeleri_clicked()
 
             ui->anaPencereleri->setCurrentWidget(ui->playlistsPage);
 
+            medyalariListele(i);
+
             this->setVisible(false);
 
             ui->playlistsName->setText(QString::fromStdWString(i).replace("../playlists/","").replace(".txt",""));
             ui->playlistsIcon->setPixmap(medyaIcon->pixmap());
-
-            medyalariListele(i);
-
-            isReset = false;
         });
         oynatmaListesiSecenegiLayout->addWidget(medyaOynat);
 
@@ -1463,8 +1460,6 @@ void muzikCikar::muzikCikarOlusturmaCikis(QVector<QString> deger)
 
     for (auto i : deger) {
         QFile::remove(i.prepend("../musics/").append(".mp3"));
-
-        qDebug() << i;
     }
 
     QProcess process;
@@ -1711,8 +1706,6 @@ void MainWindow::ayarlariYukle()
 
             ui->karanlikTema->setCheckState(Qt::Checked);
         }
-
-        qDebug() << karanlikTema;
     }
 }
 
