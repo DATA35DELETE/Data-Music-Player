@@ -421,22 +421,6 @@
       </widget>
       <widget class="QWidget" name="playlistsPage">
        <layout class="QGridLayout" name="gridLayout_7">
-        <item row="0" column="3">
-         <spacer name="horizontalSpacer_5">
-          <property name="orientation">
-           <enum>Qt::Orientation::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="0" column="5">
-         <widget class="QLineEdit" name="playlistsArama"/>
-        </item>
         <item row="0" column="0">
          <widget class="QLabel" name="playlistsIcon">
           <property name="minimumSize">
@@ -460,6 +444,35 @@
          </widget>
         </item>
         <item row="0" column="4">
+         <spacer name="horizontalSpacer_5">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="1" column="0" colspan="8">
+         <widget class="QListWidget" name="playlistsList"/>
+        </item>
+        <item row="0" column="6">
+         <widget class="QLineEdit" name="playlistsArama"/>
+        </item>
+        <item row="0" column="3">
+         <widget class="QLabel" name="playlistSarkiSayisi">
+          <property name="text">
+           <string>TextLabel</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignHCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="5">
          <widget class="QLabel" name="label_8">
           <property name="minimumSize">
            <size>
@@ -484,7 +497,7 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="1">
+        <item row="0" column="1" colspan="2">
          <widget class="QLabel" name="playlistsName">
           <property name="font">
            <font>
@@ -493,19 +506,6 @@
           </property>
           <property name="text">
            <string>PlaylistsName</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0" colspan="7">
-         <widget class="QListWidget" name="playlistsList"/>
-        </item>
-        <item row="0" column="2">
-         <widget class="QLabel" name="playlistSarkiSayisi">
-          <property name="text">
-           <string>TextLabel</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignHCenter</set>
           </property>
          </widget>
         </item>
