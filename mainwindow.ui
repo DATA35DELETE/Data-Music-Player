@@ -1,0 +1,1277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1169</width>
+    <height>697</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Data Music Player</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="4" rowspan="2">
+     <widget class="QWidget" name="musicCard" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>200</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>250</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="1">
+        <widget class="QPushButton" name="musicCardButton">
+         <property name="maximumSize">
+          <size>
+           <width>40</width>
+           <height>40</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="QLabel" name="musicsThumbnails">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>200</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>250</width>
+           <height>250</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="scaledContents">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="2">
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="4" column="0" colspan="2">
+        <widget class="QLabel" name="musicsName">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>250</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Şarkı Seçiniz</string>
+         </property>
+         <property name="scaledContents">
+          <bool>true</bool>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0" colspan="2">
+        <widget class="QLabel" name="musicsAuthor">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>50</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>250</width>
+           <height>50</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Şarkı Seçiniz</string>
+         </property>
+         <property name="scaledContents">
+          <bool>true</bool>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0" colspan="2">
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="0" colspan="2">
+        <spacer name="verticalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="0">
+        <widget class="QWidget" name="widget" native="true"/>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Menüler</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0" colspan="5">
+     <layout class="QGridLayout" name="musicControlWidget">
+      <item row="0" column="1">
+       <widget class="QSlider" name="musicProgres">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="musicDuration">
+        <property name="text">
+         <string>00:00:00</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QLabel" name="musicPosition">
+        <property name="text">
+         <string>00:00:00</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="3">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QPushButton" name="musicMod">
+          <property name="maximumSize">
+           <size>
+            <width>48</width>
+            <height>48</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>37</width>
+            <height>32</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="musicBefore">
+          <property name="maximumSize">
+           <size>
+            <width>48</width>
+            <height>48</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>32</width>
+            <height>32</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="musicControl">
+          <property name="maximumSize">
+           <size>
+            <width>64</width>
+            <height>64</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>48</width>
+            <height>48</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="musicAfter">
+          <property name="maximumSize">
+           <size>
+            <width>48</width>
+            <height>48</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>32</width>
+            <height>32</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QWidget" name="horizontalWidget_2" native="true">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QPushButton" name="musicVolumeButton">
+             <property name="maximumSize">
+              <size>
+               <width>48</width>
+               <height>48</height>
+              </size>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>32</width>
+               <height>32</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="musicVolume">
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="value">
+              <number>50</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+    <item row="0" column="2" rowspan="2">
+     <widget class="QStackedWidget" name="pages">
+      <widget class="QWidget" name="homePage">
+       <layout class="QGridLayout" name="gridLayout_3">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>🎵 DataMusicPlayer 🎵</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="settingsPage">
+       <layout class="QGridLayout" name="gridLayout_7">
+        <item row="6" column="0" colspan="2">
+         <spacer name="verticalSpacer_5">
+          <property name="orientation">
+           <enum>Qt::Orientation::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="0" column="0" colspan="2">
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Ayarlar</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>Müzik Klasörleri:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QListWidget" name="musicsPathList">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>100</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="2">
+         <widget class="Line" name="line">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_7">
+          <property name="text">
+           <string>Tema: </string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QComboBox" name="themeColor">
+          <item>
+           <property name="text">
+            <string>Beyaz</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Siyah</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Gri(Karanlık)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Gri(Aydınlık)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Kırmızı(Karanlık)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Kırmızı(Aydınlık)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Yeşil(Karanlık)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Yeşil(Aydınlık)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Mavi(Karanlık)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Mavi(Aydınlık)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Camgöbeği(Karanlık)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Camgöbeği(Aydınlık)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Mor(Karanlık)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Mor(Aydınlık)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Sarı(Karanlık)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Sarı(Aydınlık)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Turuncu(Karanlık)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Turuncu(Aydınlık)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string/>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="7" column="0" colspan="2">
+         <widget class="QPushButton" name="settingsSave">
+          <property name="text">
+           <string>Kaydet</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QPushButton" name="musicsPathAddingButton">
+          <property name="text">
+           <string>Müzik Klasörü Ekle</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLabel" name="label_12">
+          <property name="text">
+           <string>Başlanhıçta Temaları İndir: </string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1">
+         <widget class="QCheckBox" name="checkBox">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="musicDonwloadPage">
+       <layout class="QGridLayout" name="gridLayout_8">
+        <item row="1" column="3">
+         <spacer name="horizontalSpacer_6">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="musicDownloadUrl">
+          <property name="maximumSize">
+           <size>
+            <width>200</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="placeholderText">
+           <string>Müziğin Url'sini giriniz...</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_11">
+          <property name="text">
+           <string>Url: </string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0" colspan="5">
+         <widget class="QTextEdit" name="log">
+          <property name="documentTitle">
+           <string/>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+          <property name="markdown">
+           <string/>
+          </property>
+          <property name="html">
+           <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+hr { height: 1px; border-width: 0; }
+li.unchecked::marker { content: &quot;\2610&quot;; }
+li.checked::marker { content: &quot;\2612&quot;; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Segoe UI'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;h1 style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:xx-large; font-weight:700;&quot;&gt;&lt;br /&gt;&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0" colspan="5">
+         <widget class="QWidget" name="horizontalWidget" native="true">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <item>
+            <widget class="Line" name="line_2">
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_9">
+             <property name="text">
+              <string>Olay Günlüğü</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="line_3">
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="0" column="0" colspan="5">
+         <widget class="QLabel" name="label_10">
+          <property name="text">
+           <string>Müzik İndir</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="4">
+         <widget class="QWidget" name="verticalWidget" native="true">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>2342344</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <item>
+            <widget class="QPushButton" name="ytDlpTools">
+             <property name="text">
+              <string>Yt-Dlp Aracını İndir</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="ffmpegTools">
+             <property name="text">
+              <string>FFmpeg Aracını İndir</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="nodejsTools">
+             <property name="text">
+              <string>Node.js Aracını İndir</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="1" column="2" rowspan="2">
+         <widget class="QPushButton" name="downloadButton">
+          <property name="minimumSize">
+           <size>
+            <width>24</width>
+            <height>24</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>24</width>
+            <height>24</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="playlists">
+       <layout class="QGridLayout" name="gridLayout_5">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Oynatma Listeleri</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QListWidget" name="playlistsList"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="playlistsPage">
+       <layout class="QGridLayout" name="gridLayout_6">
+        <item row="0" column="4">
+         <widget class="QLabel" name="label_4">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>40</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="5">
+         <widget class="QLineEdit" name="playlistSearcher"/>
+        </item>
+        <item row="0" column="3">
+         <spacer name="horizontalSpacer_5">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="playlistIcon">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>40</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="scaledContents">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLabel" name="playlistName">
+          <property name="text">
+           <string>TextLabel</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QLabel" name="playlistMusicCount">
+          <property name="text">
+           <string>TextLabel</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="6">
+         <widget class="QPushButton" name="playlistReloader">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>40</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>32</width>
+            <height>32</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="7">
+         <widget class="QListWidget" name="listWidget"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="allMusicsPage">
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="0" column="2">
+         <spacer name="horizontalSpacer_4">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLabel" name="musicsCount">
+          <property name="text">
+           <string>TextLabel</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="4">
+         <widget class="QLineEdit" name="musicsSearcher"/>
+        </item>
+        <item row="0" column="3">
+         <widget class="QLabel" name="searcIcon">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>40</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>Tüm Müzikler</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="5">
+         <widget class="QPushButton" name="musicReloader">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>40</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>32</width>
+            <height>32</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="6">
+         <widget class="QListWidget" name="allMusicsList">
+          <property name="resizeMode">
+           <enum>QListView::ResizeMode::Adjust</enum>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QScrollArea" name="menus">
+      <property name="minimumSize">
+       <size>
+        <width>100</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>170</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="widgetResizable">
+       <bool>true</bool>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop</set>
+      </property>
+      <widget class="QWidget" name="scrollAreaWidgetContents">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>168</width>
+         <height>538</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QPushButton" name="homeButton">
+          <property name="text">
+           <string>Giriş</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="allMusicsButton">
+          <property name="text">
+           <string>Tüm Şarkılar</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="playlistButton">
+          <property name="text">
+           <string>Müzik Listeleri</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="settingsButton">
+          <property name="text">
+           <string>Ayarlar</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="musicsDownloadButton">
+          <property name="text">
+           <string>Müzik İndir</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Orientation::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1169</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="defaultUp">
+    <bool>false</bool>
+   </property>
+   <property name="nativeMenuBar">
+    <bool>false</bool>
+   </property>
+   <widget class="QMenu" name="menuMedya">
+    <property name="title">
+     <string>Medya</string>
+    </property>
+    <widget class="QMenu" name="menuM_zik_Ekle">
+     <property name="title">
+      <string>Müzik Ekle</string>
+     </property>
+     <addaction name="actionYolu_Ekle"/>
+     <addaction name="actionTekli_Ekle"/>
+    </widget>
+    <widget class="QMenu" name="menuM_zik_kar">
+     <property name="title">
+      <string>Müzik Çıkar</string>
+     </property>
+     <addaction name="actionYolu_kar2"/>
+     <addaction name="actionTekli_kar"/>
+    </widget>
+    <addaction name="menuM_zik_Ekle"/>
+    <addaction name="menuM_zik_kar"/>
+   </widget>
+   <widget class="QMenu" name="menuOynatma_Listesi">
+    <property name="title">
+     <string>Oynatma Listesi</string>
+    </property>
+    <addaction name="actionEkle"/>
+    <addaction name="actionKald_r"/>
+   </widget>
+   <widget class="QMenu" name="menuHakk_nda">
+    <property name="title">
+     <string>Görünüm</string>
+    </property>
+    <addaction name="actionSiyah"/>
+    <addaction name="actionByeaz"/>
+    <addaction name="actionGri_Karanl_k"/>
+    <addaction name="actionGri_Ayd_nl_k"/>
+    <addaction name="actionK_rm_z_Karanl_k"/>
+    <addaction name="actionK_rm_z_Ayd_nl_k"/>
+    <addaction name="actionYe_il_Karanl_k"/>
+    <addaction name="actionYe_il_Ayd_nl_k"/>
+    <addaction name="actionMavi_Karanl_k"/>
+    <addaction name="actionMavi_Ayd_nl_k"/>
+    <addaction name="actionCamg_be_i_Karanl_k"/>
+    <addaction name="actionCamg_be_i_Ayd_nl_k"/>
+    <addaction name="actionTuruncu_Karanl_k"/>
+    <addaction name="actionTuruncu_Ayd_nl_k"/>
+    <addaction name="actionSar_Karanl_k"/>
+    <addaction name="actionSar_Ayd_nl_k"/>
+    <addaction name="actionMor_Karanl_k"/>
+    <addaction name="actionMor_Ayd_nl_k"/>
+   </widget>
+   <widget class="QMenu" name="menuHakk_nda_2">
+    <property name="title">
+     <string>Hakkında</string>
+    </property>
+    <addaction name="actionS_r_m"/>
+    <addaction name="actionGithub"/>
+    <addaction name="actionLinkedln"/>
+   </widget>
+   <widget class="QMenu" name="menuMen_ler">
+    <property name="title">
+     <string>Menüler</string>
+    </property>
+    <addaction name="actionGiri"/>
+    <addaction name="actionT_m_ark_lar"/>
+    <addaction name="action_alma_Listeleri"/>
+    <addaction name="actionAyarlar"/>
+    <addaction name="actionM_zik_ndir"/>
+   </widget>
+   <addaction name="menuMedya"/>
+   <addaction name="menuOynatma_Listesi"/>
+   <addaction name="menuHakk_nda"/>
+   <addaction name="menuHakk_nda_2"/>
+   <addaction name="menuMen_ler"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionYolu_Ekle">
+   <property name="text">
+    <string>Yolu Ekle</string>
+   </property>
+  </action>
+  <action name="actionTekli_Ekle">
+   <property name="text">
+    <string>Tekli Ekle</string>
+   </property>
+  </action>
+  <action name="actionYolu_kar2">
+   <property name="text">
+    <string>Yolu Çıkar</string>
+   </property>
+  </action>
+  <action name="actionTekli_kar">
+   <property name="text">
+    <string>Tekli Çıkar</string>
+   </property>
+  </action>
+  <action name="actionEkle">
+   <property name="text">
+    <string>Oluştur</string>
+   </property>
+  </action>
+  <action name="actionKald_r">
+   <property name="text">
+    <string>Kaldır</string>
+   </property>
+  </action>
+  <action name="actionSiyah">
+   <property name="text">
+    <string>Siyah</string>
+   </property>
+  </action>
+  <action name="actionByeaz">
+   <property name="text">
+    <string>Beyaz</string>
+   </property>
+  </action>
+  <action name="actionGri_Karanl_k">
+   <property name="text">
+    <string>Gri(Karanlık)</string>
+   </property>
+  </action>
+  <action name="actionGri_Ayd_nl_k">
+   <property name="text">
+    <string>Gri(Aydınlık)</string>
+   </property>
+  </action>
+  <action name="actionK_rm_z_Karanl_k">
+   <property name="text">
+    <string>Kırmızı(Karanlık)</string>
+   </property>
+  </action>
+  <action name="actionK_rm_z_Ayd_nl_k">
+   <property name="text">
+    <string>Kırmızı(Aydınlık)</string>
+   </property>
+  </action>
+  <action name="actionYe_il_Karanl_k">
+   <property name="text">
+    <string>Yeşil(Karanlık)</string>
+   </property>
+  </action>
+  <action name="actionYe_il_Ayd_nl_k">
+   <property name="text">
+    <string>Yeşil(Aydınlık)</string>
+   </property>
+  </action>
+  <action name="actionMavi_Karanl_k">
+   <property name="text">
+    <string>Mavi(Karanlık)</string>
+   </property>
+  </action>
+  <action name="actionMavi_Ayd_nl_k">
+   <property name="text">
+    <string>Mavi(Aydınlık)</string>
+   </property>
+  </action>
+  <action name="actionCamg_be_i_Karanl_k">
+   <property name="text">
+    <string>Camgöbeği(Karanlık)</string>
+   </property>
+  </action>
+  <action name="actionCamg_be_i_Ayd_nl_k">
+   <property name="text">
+    <string>Camgöbeği(Aydınlık)</string>
+   </property>
+  </action>
+  <action name="actionTuruncu_Karanl_k">
+   <property name="text">
+    <string>Turuncu(Karanlık)</string>
+   </property>
+  </action>
+  <action name="actionTuruncu_Ayd_nl_k">
+   <property name="text">
+    <string>Turuncu(Aydınlık)</string>
+   </property>
+  </action>
+  <action name="actionSar_Karanl_k">
+   <property name="text">
+    <string>Sarı(Karanlık)</string>
+   </property>
+  </action>
+  <action name="actionSar_Ayd_nl_k">
+   <property name="text">
+    <string>Sarı(Aydınlık)</string>
+   </property>
+  </action>
+  <action name="actionMor_Karanl_k">
+   <property name="text">
+    <string>Mor(Karanlık)</string>
+   </property>
+  </action>
+  <action name="actionMor_Ayd_nl_k">
+   <property name="text">
+    <string>Mor(Aydınlık)</string>
+   </property>
+  </action>
+  <action name="actionS_r_m">
+   <property name="text">
+    <string>Sürüm</string>
+   </property>
+  </action>
+  <action name="actionGithub">
+   <property name="text">
+    <string>Github</string>
+   </property>
+  </action>
+  <action name="actionLinkedln">
+   <property name="text">
+    <string>Linkedln</string>
+   </property>
+  </action>
+  <action name="actionGiri">
+   <property name="text">
+    <string>Giriş</string>
+   </property>
+  </action>
+  <action name="actionT_m_ark_lar">
+   <property name="text">
+    <string>Tüm Şarkılar</string>
+   </property>
+  </action>
+  <action name="action_alma_Listeleri">
+   <property name="text">
+    <string>Çalma Listeleri</string>
+   </property>
+  </action>
+  <action name="actionAyarlar">
+   <property name="text">
+    <string>Ayarlar</string>
+   </property>
+  </action>
+  <action name="actionM_zik_ndir">
+   <property name="text">
+    <string>Müzik İndir</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,22 @@
+<RCC>
+    <qresource prefix="/">
+        <file>assets/icons/airplay.svg</file>
+        <file>assets/icons/check.svg</file>
+        <file>assets/icons/nota.svg</file>
+        <file>assets/icons/pause.svg</file>
+        <file>assets/icons/play.svg</file>
+        <file>assets/icons/repeat.svg</file>
+        <file>assets/icons/repeat-1.svg</file>
+        <file>assets/icons/search.svg</file>
+        <file>assets/icons/shuffle.svg</file>
+        <file>assets/icons/skip-back.svg</file>
+        <file>assets/icons/skip-forward.svg</file>
+        <file>assets/icons/volume-2.svg</file>
+        <file>assets/icons/volume-x.svg</file>
+        <file>assets/icons/x.svg</file>
+        <file>assets/icons/reset.svg</file>
+        <file>assets/icons/heart.svg</file>
+        <file>assets/icons/musicCard.svg</file>
+        <file>assets/icons/download.svg</file>
+    </qresource>
+</RCC>

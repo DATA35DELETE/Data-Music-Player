@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>musicremove</class>
+ <widget class="QMainWindow" name="musicremove">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>394</width>
+    <height>560</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>394</width>
+    <height>560</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>394</width>
+    <height>560</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Müzik Çıkar</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="4" column="0">
+     <widget class="QLabel" name="musicRemoveSearchIcon">
+      <property name="minimumSize">
+       <size>
+        <width>32</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>32</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="scaledContents">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1" colspan="3">
+     <widget class="QLineEdit" name="musicRemoveSearch"/>
+    </item>
+    <item row="2" column="0" colspan="4">
+     <widget class="QComboBox" name="musicPathList"/>
+    </item>
+    <item row="1" column="0" colspan="4">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Çıkarılıcak müziği seçiniz.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0" colspan="4">
+     <widget class="QListWidget" name="musicRemoveList"/>
+    </item>
+    <item row="5" column="0" colspan="4">
+     <widget class="QWidget" name="horizontalWidget" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>10</height>
+       </size>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="musicRemoveCikar">
+         <property name="text">
+          <string>Çıkar</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="0" colspan="4">
+     <widget class="QWidget" name="horizontalWidget" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>10</height>
+       </size>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton">
+         <property name="maximumSize">
+          <size>
+           <width>48</width>
+           <height>48</height>
+          </size>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
