@@ -846,7 +846,12 @@ void MainWindow::connectors()
 
     if(QFile::exists("../yt-dlp/yt-dlp") && QFile::exists("../ffmpeg/ffmpeg/bin/ffmpeg"))
     {
-        connect(ui->downloadButton, &QLineEdit::returnPressed , this,
+        connect(ui->musicDownloadUrl, &QLineEdit::returnPressed , this,
+                [this]()
+                {
+                    medyaIndirme(ui->musicDownloadUrl->text());
+                });
+        connect(ui->downloadButton, &QPushButton::clicked , this,
                 [this]()
                 {
                     medyaIndirme(ui->musicDownloadUrl->text());
@@ -920,7 +925,7 @@ void MainWindow::musicsRead()
         return;
 
     for (auto i : musics) {
-        TagLib::MPEG::File file(i.toStdWString().c_str());
+        TagLib::MPEG::File file(TAGLIB_FILENAME(i));
         if (!file.isValid()) {
             qDebug() << "Hata: Geçersiz MP3 dosyası." << '\n';
             return;
@@ -1184,7 +1189,7 @@ void MainWindow::player_mediaStatusChanged(QMediaPlayer::MediaStatus status)
 
     if(!isPlaylists)
     {
-        file = new TagLib::MPEG::File(musics.at(iMusic).toStdWString().c_str());
+        file = new TagLib::MPEG::File(TAGLIB_FILENAME(musics.at(iMusic)));
         if (!file->isValid()) {
             qDebug() << "Hata: Geçersiz MP3 dosyası." << '\n';
             return;
@@ -1192,7 +1197,7 @@ void MainWindow::player_mediaStatusChanged(QMediaPlayer::MediaStatus status)
     }
     else
     {
-        file = new TagLib::MPEG::File(playlistsMusics.at(iMusic).toStdWString().c_str());
+        file = new TagLib::MPEG::File(TAGLIB_FILENAME(playlistsMusics.at(iMusic)));
         if (!file->isValid()) {
             qDebug() << "Hata: Geçersiz MP3 dosyası." << '\n';
             return;

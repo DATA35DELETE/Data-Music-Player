@@ -36,11 +36,13 @@
 
 #define fileSeparator "\\"
 #define ffmpegVersionNumber "ffmpeg-n9.0-latest-win64-lgpl-9.0"
+#define TAGLIB_FILENAME(path) ((path).toStdWString().c_str())
 
 #else
 
 #define fileSeparator "/"
 #define ffmpegVersionNumber "ffmpeg-n9.0-latest-linux64-lgpl-9.0"
+#define TAGLIB_FILENAME(path) ((path).toUtf8().constData())
 
 #endif
 
