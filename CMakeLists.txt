@@ -30,6 +30,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         musiccard.h musiccard.cpp musiccard.ui
         musicremove.h musicremove.cpp musicremove.ui
         playlistadd.h playlistadd.cpp playlistadd.ui
+        about.h about.cpp about.ui
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET dataMusicPlayer APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

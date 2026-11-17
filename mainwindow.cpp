@@ -36,11 +36,9 @@ MainWindow::MainWindow(QWidget *parent)
     card = new musicCard;
     remove = new musicremove;
     playlistAdd = new playlistadd;
+    aboutWin = new about;
 
     mainWindow = this;
-
-    /*configurer = new dataThemeConfigurer(Themes::Black, qApp);
-    configurer->setTheme(Themes::Black);*/
 
     player = new QMediaPlayer(this);
 
@@ -115,6 +113,8 @@ void MainWindow::iconsUpdate()
     configurer->setIcon(playlistAdd->searchIcon, QString::fromUtf8(":/assets/icons/search.svg"));
     if(playlistAdd->toolTip().isEmpty())
         configurer->setIcon(playlistAdd->playlistIconButton, QString::fromUtf8(":/assets/icons/nota.svg"));
+    configurer->setIcon(aboutWin->close, QString::fromUtf8(":/assets/icons/x.svg"));
+    configurer->setIcon(aboutWin->icon, QString::fromUtf8(":/assets/icons/nota.svg"));
 }
 
 void MainWindow::connectors()
@@ -540,6 +540,15 @@ void MainWindow::connectors()
 
                 d.exec();
     });
+    connect(ui->actionS_r_m, &QAction::triggered, this,
+    [=](){
+        aboutWin->setVisible(true);
+    });
+    connect(aboutWin->close, &QPushButton::clicked, this,
+            [=](){
+                aboutWin->setVisible(false);
+            });
+
 
     /* Menubar Tema */
 

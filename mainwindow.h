@@ -30,6 +30,7 @@
 #include "musiccard.h"
 #include "musicremove.h"
 #include "playlistadd.h"
+#include "about.h"
 
 #ifdef WIN32
 
@@ -80,6 +81,7 @@ public:
     musicCard *card;
     musicremove *remove;
     playlistadd *playlistAdd;
+    about *aboutWin;
 
 public slots:
     void player_mediaStatusChanged(QMediaPlayer::MediaStatus);
