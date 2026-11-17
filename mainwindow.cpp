@@ -1252,6 +1252,8 @@ void MainWindow::player_mediaStatusChanged(QMediaPlayer::MediaStatus status)
         else
             ui->statusbar->showMessage(QFileInfo(playlistsMusics.at(iMusic)).fileName().remove(".mp3").append(" | ").append((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>()));
 
+        delete file;
+
         return;
     }
 
@@ -1892,8 +1894,11 @@ void MainWindow::ytDlpIndirme_clicked()
 
                 ui->log->setText(ui->log->toPlainText().append("[Yt-Dlp İndirme]: İndirilen dosya ayıklanıyor..."));
 
-                std::system(qPrintable(QString("tar -xf ../yt-dlp.zip -C ../yt-dlp")));
-
+#ifdef WIN32
+                std::system(qPrintable(QString("tar -xf ..\yt-dlp.zip -C ..\yt-dlp")));
+#else
+                std::system(qPrintable(QString("unzip ../yt-dlp.zip -d ../yt-dlp")));
+#endif
                 ui->log->setText(ui->log->toPlainText().append("OK\n"));
 
                 QMessageBox msg(
@@ -1934,8 +1939,11 @@ void MainWindow::ytDlpIndirme_clicked2()
 
                 ui->log->append(hata);
             });
-
+#ifdef WIN32
     ytDlpIndirme->startDetached("..\\yt-dlp\\yt-dlp", {"-U"});
+#else
+    ytDlpIndirme->startDetached("../yt-dlp/yt-dlp", {"-U"});
+#endif
 
     ui->log->setText(ui->log->toPlainText().append("OK\n"));
 }

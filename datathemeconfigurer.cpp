@@ -100,12 +100,17 @@ dataThemeConfigurer::dataThemeConfigurer()
                 downloanded.close();
 
                 QStringList args;
+                QString program;
 
-                args << "dataTheme/it.zip"
-                     << "-d" << "dataTheme";
+#ifdef Q_OS_WIN
+                program = "tar";
+                args << "-xf" << "dataTheme/it.zip" << "-C" << "dataTheme";
+#else
+                program = "unzip";
+                args << "-o" << "dataTheme/it.zip" << "-d" << "dataTheme";
+#endif
 
-                unzipProcess->start("unzip", args);
-
+                unzipProcess->start(program, args);
                 mngr->deleteLater();
             });
 
