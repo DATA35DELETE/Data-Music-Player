@@ -22,6 +22,10 @@ set(PROJECT_SOURCES
         datathemeconfigurer.h
 )
 
+if(WIN32)
+    set(APP_ICON_RESOURCE "${CMAKE_CURRENT_SOURCE_DIR}/uygulama_ico.rc")
+endif()
+
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(dataMusicPlayer
         MANUAL_FINALIZATION
@@ -31,6 +35,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         musicremove.h musicremove.cpp musicremove.ui
         playlistadd.h playlistadd.cpp playlistadd.ui
         about.h about.cpp about.ui
+        ${APP_ICON_RESOURCE}
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET dataMusicPlayer APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

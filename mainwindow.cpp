@@ -1400,7 +1400,7 @@ void MainWindow::player_positionChanged(qint64 position)
         card->musicCardProgress->setValue((float)position / (float)player->duration() * 100);
     }
 
-    if(position == player->duration())
+    if(position >= player->duration() - 100)
         nextMusic(true);
 }
 void MainWindow::player_playingChanged(bool playing)
@@ -1523,7 +1523,7 @@ void MainWindow::nextMusic(bool isNext)
         }
         else if(mod == 1)
         {
-            player->setLoops(2);
+            player->setPosition(100);
         }
         else if(mod == 2)
         {
@@ -1564,7 +1564,7 @@ void MainWindow::nextMusic(bool isNext)
         }
         else if(mod == 1)
         {
-            player->setLoops(2);
+            player->setPosition(100);
         }
         else if(mod == 2)
         {
