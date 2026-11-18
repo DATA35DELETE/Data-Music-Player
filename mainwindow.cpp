@@ -33,6 +33,23 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    QStringList args;
+
+    args << "--js-runtimes" << "node"
+         << "--cookies" << "cookies.txt"
+         << "--ffmpeg-location" << "..\\ffmpeg\\ffmpeg\\bin"
+         << "-f" << "bestaudio/best"
+         << "-x"
+         << "--audio-format" << "mp3"
+         << "--audio-quality" << "0"
+         << "--embed-thumbnail"
+         << "--add-metadata"
+         << "-P" << "..\\downloads"
+         << "-o" << "%(title)s.%(ext)s"
+         << "url";
+
+    qDebug() << args;
+
     QSettings settFile("./config.ini", QSettings::IniFormat);
     if(settFile.value("autoThemeUpdate").isNull())
     {
@@ -966,7 +983,7 @@ void MainWindow::connectors()
     }
 
 #else
-    if(!QFile::exists("../yt-dlp/yt-dlp"))
+    if(!QFile::exists("../yt-dlp/yt-dlp-linux"))
         connect(ui->ytDlpTools, &QPushButton::clicked, this, &MainWindow::ytDlpIndirme_clicked);
     else
     {
@@ -2091,7 +2108,11 @@ void MainWindow::ytDlpIndirme_clicked()
 
     ui->log->setText(ui->log->toPlainText().append("OK\n"));
 
+#ifdef WIN32
     mngr->get(QNetworkRequest(QUrl("https://github.com/yt-dlp/yt-dlp/releases/download/2026.08.19/yt-dlp_win.zip")));
+#else
+    mngr->get(QNetworkRequest(QUrl("https://github.com/yt-dlp/yt-dlp/releases/download/2026.08.19/yt-dlp_linux.zip")));
+#endif
 }
 void MainWindow::ytDlpIndirme_clicked2()
 {
@@ -2258,6 +2279,8 @@ void MainWindow::medyaIndirme(QString url)
         ytDlpIndirme->start("../yt-dlp/yt-dlp", args);
 
 #endif
+
+        qDebug() << args;
     }
 }
 
