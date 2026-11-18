@@ -74,6 +74,7 @@
 
     mngr->get(QNetworkRequest(QUrl("https://github.com/DATA35DELETE/Data-s-QSS/archive/refs/tags/1.1v.zip")));
 }*/
+dataThemeConfigurer::dataThemeConfigurer(bool){ emit initFinished();}
 dataThemeConfigurer::dataThemeConfigurer()
 {
     QDir().mkdir("dataTheme");

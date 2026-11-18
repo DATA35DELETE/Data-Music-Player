@@ -47,6 +47,7 @@ private:
 public:
     //dataThemeConfigurer(Themes, QApplication*);
     dataThemeConfigurer();
+    dataThemeConfigurer(bool);
 
     void setTheme(Themes);
     Themes getTheme();

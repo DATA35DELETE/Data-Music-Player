@@ -20,6 +20,7 @@ int mod = 0;
 bool userControl = false;
 bool isPlaylists = false;
 bool isMusicCard = false;
+bool isAutoThemeUpdate = true;
 
 QMediaPlayer *player;
 QAudioOutput *output;
@@ -32,7 +33,34 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    configurer = new dataThemeConfigurer();
+    QSettings settFile("./config.ini", QSettings::IniFormat);
+    if(settFile.value("autoThemeUpdate").isNull())
+    {
+        settFile.setValue("autoThemeUpdate", "1");
+
+        isAutoThemeUpdate = true;
+    }
+    else
+    {
+        if(settFile.value("autoThemeUpdate").value<QString>().contains("1"))
+        {
+            isAutoThemeUpdate = true;
+
+            ui->isAutoThemeUpdateCheck->setCheckState(Qt::Checked);
+        }
+        else
+        {
+            isAutoThemeUpdate = false;
+
+            ui->isAutoThemeUpdateCheck->setCheckState(Qt::Unchecked);
+        }
+    }
+
+    if(isAutoThemeUpdate)
+        configurer = new dataThemeConfigurer();
+    else
+        configurer = new dataThemeConfigurer(true);
+
     card = new musicCard;
     remove = new musicremove;
     playlistAdd = new playlistadd;
@@ -64,7 +92,7 @@ MainWindow::MainWindow(QWidget *parent)
     {
         if(muzikYollariFile.open(QFile::OpenModeFlag::WriteOnly))
         {
-            QTextStream(&muzikYollariFile) <<                                             QStandardPaths::writableLocation(QStandardPaths::MusicLocation) << "\n" << QString::fromStdString(QDir("../downloads").absolutePath().toStdString());
+            QTextStream(&muzikYollariFile) << QStandardPaths::writableLocation(QStandardPaths::MusicLocation) << "\n" << QString::fromStdString(QDir("../downloads").absolutePath().toStdString());
         }
     }
     muzikYollariFile.close();
@@ -74,6 +102,17 @@ MainWindow::MainWindow(QWidget *parent)
     readFaw();
 
     connectors();
+
+    if(!isAutoThemeUpdate)
+    {
+        settingsLoad();
+
+        iconsUpdate();
+
+        this->show();
+
+        this->activateWindow();
+    }
 }
 
 void MainWindow::iconsUpdate()
@@ -120,16 +159,16 @@ void MainWindow::iconsUpdate()
 void MainWindow::connectors()
 {
     connect(configurer, &dataThemeConfigurer::initFinished, this,
-            [=]()
-            {
-                settingsLoad();
+        [=]()
+        {
+            settingsLoad();
 
-                iconsUpdate();
+            iconsUpdate();
 
-                this->show();
+            this->show();
 
-                this->activateWindow();
-            });
+            this->activateWindow();
+        });
 
     connect(new QShortcut(QKeySequence("Alt+M"), ui->centralwidget), &QShortcut::activated, this,
             [=](){
@@ -146,7 +185,7 @@ void MainWindow::connectors()
                 configurer->setTheme(Themes::Black);
 
                 QSettings settFile("./config.ini", QSettings::IniFormat);
-                settFile.setValue("general/theme", "black");
+                settFile.setValue("theme", "black");
 
                 settingsLoad();
 
@@ -158,7 +197,7 @@ void MainWindow::connectors()
         configurer->setTheme(Themes::White);
 
         QSettings settFile("./config.ini", QSettings::IniFormat);
-        settFile.setValue("general/theme", "white");
+        settFile.setValue("theme", "white");
 
         settingsLoad();
 
@@ -170,7 +209,7 @@ void MainWindow::connectors()
                 configurer->setTheme(Themes::GrayDark);
 
                 QSettings settFile("./config.ini", QSettings::IniFormat);
-                settFile.setValue("general/theme", "grayDark");
+                settFile.setValue("theme", "grayDark");
 
                 settingsLoad();
 
@@ -182,7 +221,7 @@ void MainWindow::connectors()
                 configurer->setTheme(Themes::GrayLigth);
 
                 QSettings settFile("./config.ini", QSettings::IniFormat);
-                settFile.setValue("general/theme", "grayLight");
+                settFile.setValue("theme", "grayLight");
 
                 settingsLoad();
 
@@ -194,7 +233,7 @@ void MainWindow::connectors()
                 configurer->setTheme(Themes::RedDark);
 
                 QSettings settFile("./config.ini", QSettings::IniFormat);
-                settFile.setValue("general/theme", "redDark");
+                settFile.setValue("theme", "redDark");
 
                 settingsLoad();
 
@@ -206,7 +245,7 @@ void MainWindow::connectors()
                 configurer->setTheme(Themes::RedLight);
 
                 QSettings settFile("./config.ini", QSettings::IniFormat);
-                settFile.setValue("general/theme", "redLight");
+                settFile.setValue("theme", "redLight");
 
                 settingsLoad();
 
@@ -218,7 +257,7 @@ void MainWindow::connectors()
                 configurer->setTheme(Themes::GreenDark);
 
                 QSettings settFile("./config.ini", QSettings::IniFormat);
-                settFile.setValue("general/theme", "greenDark");
+                settFile.setValue("theme", "greenDark");
 
                 settingsLoad();
 
@@ -230,7 +269,7 @@ void MainWindow::connectors()
                 configurer->setTheme(Themes::GreenLight);
 
                 QSettings settFile("./config.ini", QSettings::IniFormat);
-                settFile.setValue("general/theme", "greenLight");
+                settFile.setValue("theme", "greenLight");
 
                 settingsLoad();
 
@@ -242,7 +281,7 @@ void MainWindow::connectors()
                 configurer->setTheme(Themes::BlueLight);
 
                 QSettings settFile("./config.ini", QSettings::IniFormat);
-                settFile.setValue("general/theme", "blueDark");
+                settFile.setValue("theme", "blueLight");
 
                 settingsLoad();
 
@@ -254,7 +293,7 @@ void MainWindow::connectors()
                 configurer->setTheme(Themes::BlueDark);
 
                 QSettings settFile("./config.ini", QSettings::IniFormat);
-                settFile.setValue("general/theme", "blueLight");
+                settFile.setValue("theme", "blueDark");
 
                 settingsLoad();
 
@@ -266,7 +305,7 @@ void MainWindow::connectors()
                 configurer->setTheme(Themes::CyanLight);
 
                 QSettings settFile("./config.ini", QSettings::IniFormat);
-                settFile.setValue("general/theme", "cyanDark");
+                settFile.setValue("theme", "cyanDark");
 
                 settingsLoad();
 
@@ -278,7 +317,7 @@ void MainWindow::connectors()
                 configurer->setTheme(Themes::CyanLight);
 
                 QSettings settFile("./config.ini", QSettings::IniFormat);
-                settFile.setValue("general/theme", "cyanLight");
+                settFile.setValue("theme", "cyanLight");
 
                 settingsLoad();
 
@@ -290,7 +329,7 @@ void MainWindow::connectors()
                 configurer->setTheme(Themes::OrangeDark);
 
                 QSettings settFile("./config.ini", QSettings::IniFormat);
-                settFile.setValue("general/theme", "orangeDark");
+                settFile.setValue("theme", "orangeDark");
 
                 settingsLoad();
 
@@ -302,7 +341,7 @@ void MainWindow::connectors()
                 configurer->setTheme(Themes::OrangeLight);
 
                 QSettings settFile("./config.ini", QSettings::IniFormat);
-                settFile.setValue("general/theme", "orangeLight");
+                settFile.setValue("theme", "orangeLight");
 
 
                 settingsLoad();
@@ -314,7 +353,7 @@ void MainWindow::connectors()
                 configurer->setTheme(Themes::YellowDark);
 
                 QSettings settFile("./config.ini", QSettings::IniFormat);
-                settFile.setValue("general/theme", "yellowDark");
+                settFile.setValue("theme", "yellowDark");
 
                 settingsLoad();
 
@@ -326,7 +365,7 @@ void MainWindow::connectors()
                 configurer->setTheme(Themes::YellowLight);
 
                 QSettings settFile("./config.ini", QSettings::IniFormat);
-                settFile.setValue("general/theme", "yellowLight");
+                settFile.setValue("theme", "yellowLight");
 
                 settingsLoad();
 
@@ -338,7 +377,7 @@ void MainWindow::connectors()
                 configurer->setTheme(Themes::PurpleDark);
 
                 QSettings settFile("./config.ini", QSettings::IniFormat);
-                settFile.setValue("general/theme", "purpleDark");
+                settFile.setValue("theme", "purpleDark");
 
                 settingsLoad();
 
@@ -350,7 +389,7 @@ void MainWindow::connectors()
                 configurer->setTheme(Themes::PurpleLight);
 
                 QSettings settFile("./config.ini", QSettings::IniFormat);
-                settFile.setValue("general/theme", "purpleLight");
+                settFile.setValue("theme", "purpleLight");
 
                 settingsLoad();
 
@@ -370,8 +409,6 @@ void MainWindow::connectors()
 
                 ui->pages->setCurrentWidget(ui->allMusicsPage);
             });
-
-
     connect(ui->action_alma_Listeleri, &QAction::triggered, this,
             [=](){
                 isPlaylists = true;
@@ -438,6 +475,54 @@ void MainWindow::connectors()
                     QMessageBox(QMessageBox::Warning, "Müzik Seçilmedi", "Hiç bir müzik dosyası seçilmedi.").exec();
                 }
             });
+    connect(ui->actionYolu_Ekle, &QAction::triggered, this,
+            [=](){
+                QFileDialog fd;
+                fd.setFileMode(QFileDialog::Directory);
+
+                fd.exec();
+
+                if(!fd.selectedFiles().isEmpty())
+                {
+                    QFile musicsPath("../musicPath.sett");
+                    if(musicsPath.open(QFile::OpenModeFlag::ReadWrite))
+                    {
+                        QTextStream stream(&musicsPath);
+                        QStringList context;
+
+                        while(!stream.atEnd())
+                        {
+                            context.append(stream.readLine());
+                        }
+
+                        //context.remove(comboBox.currentIndex());
+
+                        for (auto i : fd.selectedFiles()) {
+                            context.append(i);
+                        }
+
+                        stream.seek(0);
+
+                        for (auto i : context) {
+                            stream << i << '\n';
+                        }
+
+                        settingsLoad();
+
+                        musicsRead();
+                        allMusicRead();
+
+                        iconsUpdate();
+
+                        QMessageBox(QMessageBox::Icon::Information, "Başarılı!", "Müzik yolu başarılı bir şekilde eklendi.");
+                    }
+                }
+                else
+                {
+                    QMessageBox(QMessageBox::Icon::Warning, "Başarısız!", "Müzik yolu seçilmedi.");
+                }
+            });
+
     connect(ui->actionTekli_kar, &QAction::triggered, this,
     [=](){
         remove->start(muzikYollari);
@@ -549,6 +634,17 @@ void MainWindow::connectors()
                 aboutWin->setVisible(false);
             });
 
+    connect(ui->actionAyarlar, &QAction::triggered, this,
+            [=](){
+                settingsLoad();
+
+                ui->pages->setCurrentWidget(ui->settingsPage);
+            });
+    connect(ui->actionM_zik_ndir, &QAction::triggered, this,
+            [=](){
+                ui->pages->setCurrentWidget(ui->musicDonwloadPage);
+            });
+
 
     /* Menubar Tema */
 
@@ -613,6 +709,20 @@ void MainWindow::connectors()
         else
             nextMusic(true);
     });
+    connect(new QHotkey(QKeySequence(Qt::Key_MediaNext), true, this), &QHotkey::activated, this,
+            [=](){
+                if(mod == 1)
+                {
+                    mod = 0;
+
+                    nextMusic(true);
+
+                    mod = 1;
+                }
+                else
+                    nextMusic(true);
+            });
+
     connect(ui->musicBefore, &QPushButton::clicked, this,
     [=]()
     {
@@ -627,6 +737,20 @@ void MainWindow::connectors()
         else
             nextMusic(false);
     });
+    connect(new QHotkey(QKeySequence(Qt::Key_MediaPrevious), true, this), &QHotkey::activated, this,
+            [=](){
+                if(mod == 1)
+                {
+                    mod = 0;
+
+                    nextMusic(false);
+
+                    mod = 1;
+                }
+                else
+                    nextMusic(false);
+            });
+
     connect(card->musicCardAfter, &QPushButton::clicked, this,
             [=]()
             {
@@ -656,6 +780,18 @@ void MainWindow::connectors()
                     nextMusic(false);
             });
     connect(card->musicCardControl, &QPushButton::clicked, this, &MainWindow::musicControl_clicked);
+
+
+#if defined(Q_OS_WIN)
+    QHotkey *playPauseShortcut = new QHotkey(QKeySequence(Qt::Key_MediaPlay), true, this);
+    QHotkey *playPauseShortcut2 = new QHotkey(QKeySequence(Qt::Key_MediaTogglePlayPause), true, this);
+#else
+    QHotkey *playPauseShortcut = new QHotkey(QKeySequence(Qt::Key_MediaPlay), 0}, true, this);
+    QHotkey *playPauseShortcut2 = new QHotkey(QKeySequence(Qt::Key_MediaTogglePlayPause), 0}, true, this);
+#endif
+
+    connect(playPauseShortcut, &QHotkey::activated, this, &MainWindow::musicControl_clicked);
+    connect(playPauseShortcut2, &QHotkey::activated, this, &MainWindow::musicControl_clicked);
 
     connect(ui->allMusicsList, &QListWidget::currentRowChanged, this,
     [=](int i){
@@ -1651,16 +1787,16 @@ void musicCard::end()
 void MainWindow::settingsLoad()
 {
     QSettings settFile("./config.ini", QSettings::IniFormat);
-    if(settFile.value("general/theme").isNull())
+    if(settFile.value("theme").isNull())
     {
-        settFile.setValue("general/theme", "black");
+        settFile.setValue("theme", "black");
 
         configurer->setApplicationTheme(qApp, Themes::Black);
         configurer->setTheme(Themes::Black);
     }
     else
     {
-        QString theme = settFile.value("general/theme").value<QString>();
+        QString theme = settFile.value("theme").value<QString>();
 
         if(theme.contains("black"))
         {
@@ -1790,48 +1926,74 @@ void MainWindow::settingsLoad()
 
             ui->themeColor->setCurrentIndex(17);
         }
+
+        if(settFile.value("autoThemeUpdate").isNull())
+        {
+            settFile.setValue("autoThemeUpdate", "1");
+
+            isAutoThemeUpdate = true;
+        }
+        else
+        {
+            if(settFile.value("autoThemeUpdate").value<QString>().contains("1"))
+            {
+                isAutoThemeUpdate = true;
+
+                ui->isAutoThemeUpdateCheck->setCheckState(Qt::Checked);
+            }
+            else
+            {
+                isAutoThemeUpdate = false;
+
+                ui->isAutoThemeUpdateCheck->setCheckState(Qt::Unchecked);
+            }
+        }
     }
 }
 void MainWindow::settingsSave_clicked()
 {
     QSettings settFile("./config.ini", QSettings::IniFormat);
     if(ui->themeColor->currentIndex() == 0)
-        settFile.setValue("general/theme", "white");
+        settFile.setValue("theme", "white");
     else if(ui->themeColor->currentIndex() == 1)
-        settFile.setValue("general/theme", "black");
-    if(ui->themeColor->currentIndex() == 2)
-        settFile.setValue("general/theme", "grayDark");
+        settFile.setValue("theme", "black");
+    else if(ui->themeColor->currentIndex() == 2)
+        settFile.setValue("theme", "grayDark");
     else if(ui->themeColor->currentIndex() == 3)
-        settFile.setValue("general/theme", "grayLight");
-    if(ui->themeColor->currentIndex() == 4)
-        settFile.setValue("general/theme", "redDark");
+        settFile.setValue("theme", "grayLight");
+    else if(ui->themeColor->currentIndex() == 4)
+        settFile.setValue("theme", "redDark");
     else if(ui->themeColor->currentIndex() == 5)
-        settFile.setValue("general/theme", "redLight");
-    if(ui->themeColor->currentIndex() == 6)
-        settFile.setValue("general/theme", "greenDark");
+        settFile.setValue("theme", "redLight");
+    else if(ui->themeColor->currentIndex() == 6)
+        settFile.setValue("theme", "greenDark");
     else if(ui->themeColor->currentIndex() == 7)
-        settFile.setValue("general/theme", "greenLight");
-    if(ui->themeColor->currentIndex() == 8)
-        settFile.setValue("general/theme", "blueDark");
+        settFile.setValue("theme", "greenLight");
+    else if(ui->themeColor->currentIndex() == 8)
+        settFile.setValue("theme", "blueDark");
     else if(ui->themeColor->currentIndex() == 9)
-        settFile.setValue("general/theme", "blueLight");
-    if(ui->themeColor->currentIndex() == 10)
-        settFile.setValue("general/theme", "cyanDark");
+        settFile.setValue("theme", "blueLight");
+    else if(ui->themeColor->currentIndex() == 10)
+        settFile.setValue("theme", "cyanDark");
     else if(ui->themeColor->currentIndex() == 11)
-        settFile.setValue("general/theme", "cyanLight");
-    if(ui->themeColor->currentIndex() == 12)
-        settFile.setValue("general/theme", "purpleDark");
+        settFile.setValue("theme", "cyanLight");
+    else if(ui->themeColor->currentIndex() == 12)
+        settFile.setValue("theme", "purpleDark");
     else if(ui->themeColor->currentIndex() == 13)
-        settFile.setValue("general/theme", "purpleLight");
-    if(ui->themeColor->currentIndex() == 14)
-        settFile.setValue("general/theme", "yellowDark");
+        settFile.setValue("theme", "purpleLight");
+    else if(ui->themeColor->currentIndex() == 14)
+        settFile.setValue("theme", "yellowDark");
     else if(ui->themeColor->currentIndex() == 15)
-        settFile.setValue("general/theme", "yellowLight");
-    if(ui->themeColor->currentIndex() == 16)
-        settFile.setValue("general/theme", "orangeDark");
+        settFile.setValue("theme", "yellowLight");
+    else if(ui->themeColor->currentIndex() == 16)
+        settFile.setValue("theme", "orangeDark");
     else if(ui->themeColor->currentIndex() == 17)
-        settFile.setValue("general/theme", "orangeLight");
+        settFile.setValue("theme", "orangeLight");
 
+    if(ui->isAutoThemeUpdateCheck->isChecked())
+        settFile.setValue("autoThemeUpdate", "1");
+    else if(!ui->isAutoThemeUpdateCheck->isChecked())
+        settFile.setValue("autoThemeUpdate", "0");
 
     QFile musicsPath("../musicPath.sett");
     if(musicsPath.open(QFile::OpenModeFlag::WriteOnly))

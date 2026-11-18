@@ -22,6 +22,9 @@
 #include <QNetworkAccessManager>
 #include <QDesktopServices>
 #include <QDialog>
+#include <QKeySequence>
+
+#include <qhotkey.h>
 
 #include <taglib/mpegfile.h>
 #include <taglib/id3v2tag.h>
