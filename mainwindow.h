@@ -35,6 +35,8 @@
 #include "playlistadd.h"
 #include "about.h"
 
+#include <cstdio>
+
 #ifdef WIN32
 
 #define fileSeparator "\\"
@@ -81,6 +83,10 @@ public:
 
     void medyaIndirme(QString);
 
+    bool ffmpegControl();
+    bool ytDlpControl();
+
+    void musicDownloadControl();
 
     Ui::MainWindow *ui;
     musicCard *card;
@@ -103,8 +109,6 @@ public slots:
 
     void settingsSave_clicked();
     void musicsPathAddingButton_clicked();
-
-    void musicDownload();
 
     void ytDlpDownload_clicked();
     void ytDlpUpdate_clicked();

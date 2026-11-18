@@ -570,63 +570,17 @@
       </widget>
       <widget class="QWidget" name="musicDonwloadPage">
        <layout class="QGridLayout" name="gridLayout_8">
-        <item row="1" column="3">
-         <spacer name="horizontalSpacer_6">
-          <property name="orientation">
-           <enum>Qt::Orientation::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLineEdit" name="musicDownloadUrl">
-          <property name="maximumSize">
-           <size>
-            <width>200</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="placeholderText">
-           <string>Müziğin Url'sini giriniz...</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_11">
+        <item row="0" column="0" colspan="6">
+         <widget class="QLabel" name="label_10">
           <property name="text">
-           <string>Url: </string>
+           <string>Müzik İndir</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignCenter</set>
           </property>
          </widget>
         </item>
-        <item row="4" column="0" colspan="5">
-         <widget class="QTextEdit" name="log">
-          <property name="documentTitle">
-           <string/>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-          <property name="markdown">
-           <string/>
-          </property>
-          <property name="html">
-           <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-hr { height: 1px; border-width: 0; }
-li.unchecked::marker { content: &quot;\2610&quot;; }
-li.checked::marker { content: &quot;\2612&quot;; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Segoe UI'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;h1 style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:xx-large; font-weight:700;&quot;&gt;&lt;br /&gt;&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0" colspan="5">
+        <item row="4" column="0" colspan="6">
          <widget class="QWidget" name="horizontalWidget" native="true">
           <property name="minimumSize">
            <size>
@@ -662,17 +616,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
           </layout>
          </widget>
         </item>
-        <item row="0" column="0" colspan="5">
-         <widget class="QLabel" name="label_10">
-          <property name="text">
-           <string>Müzik İndir</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignmentFlag::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="4">
+        <item row="2" column="5">
          <widget class="QWidget" name="verticalWidget" native="true">
           <property name="minimumSize">
            <size>
@@ -711,20 +655,88 @@ li.checked::marker { content: &quot;\2612&quot;; }
           </layout>
          </widget>
         </item>
-        <item row="1" column="2" rowspan="2">
-         <widget class="QPushButton" name="downloadButton">
+        <item row="5" column="0" colspan="6">
+         <widget class="QTextEdit" name="log">
+          <property name="documentTitle">
+           <string/>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+          <property name="markdown">
+           <string/>
+          </property>
+          <property name="html">
+           <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+hr { height: 1px; border-width: 0; }
+li.unchecked::marker { content: &quot;\2610&quot;; }
+li.checked::marker { content: &quot;\2612&quot;; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Segoe UI'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;h1 style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:xx-large; font-weight:700;&quot;&gt;&lt;br /&gt;&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="4">
+         <spacer name="horizontalSpacer_6">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="2" column="3">
+         <widget class="QWidget" name="horizontalWidget" native="true">
           <property name="minimumSize">
            <size>
-            <width>24</width>
-            <height>24</height>
+            <width>0</width>
+            <height>0</height>
            </size>
           </property>
-          <property name="maximumSize">
-           <size>
-            <width>24</width>
-            <height>24</height>
-           </size>
-          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <widget class="QLabel" name="label_11">
+             <property name="text">
+              <string>Url: </string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="musicDownloadUrl">
+             <property name="maximumSize">
+              <size>
+               <width>200</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="placeholderText">
+              <string>Müziğin Url'sini giriniz...</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="downloadButton">
+             <property name="minimumSize">
+              <size>
+               <width>24</width>
+               <height>24</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>24</width>
+               <height>24</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
        </layout>

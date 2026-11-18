@@ -81,6 +81,7 @@ MainWindow::MainWindow(QWidget *parent)
     QDir().mkdir("../ffmpeg");
     QDir().mkdir("../yt-dlp");
     QDir().mkdir("../downloads");
+    QDir().mkdir("../temp");
 
     QFile fawFiles("../playlists/Favoriler.txt");
     if(!fawFiles.exists())
@@ -950,7 +951,10 @@ void MainWindow::connectors()
                 QDesktopServices::openUrl(QUrl("https://www.linkedin.com/in/muhammet-enes-karabo%C4%9Fa-065777385/"));
             });
 
+    musicDownloadControl();
 
+    connect(ui->musicDownloadUrl, &QLineEdit::returnPressed, this, [=](){medyaIndirme(ui->musicDownloadUrl->text());});
+    connect(ui->downloadButton, &QPushButton::clicked, this, [=](){medyaIndirme(ui->musicDownloadUrl->text());});
 }
 
 void MainWindow::musicsRead()
@@ -1704,7 +1708,8 @@ void musicCard::start()
 
     mainWindow->ui->musicsThumbnails->clear();
 
-    mainWindow->player_mediaStatusChanged(player->mediaStatus());
+    if(player->isAvailable())
+        mainWindow->player_mediaStatusChanged(QMediaPlayer::BufferedMedia);
 
     this->setVisible(true);
 }
@@ -1716,7 +1721,8 @@ void musicCard::end()
 
     mainWindow->card->musicCardThumbnails->clear();
 
-    mainWindow->player_mediaStatusChanged(player->mediaStatus());
+    if(player->isAvailable())
+        mainWindow->player_mediaStatusChanged(QMediaPlayer::BufferedMedia);
 
     mainWindow->setVisible(true);
 }
@@ -2023,24 +2029,264 @@ void playlistadd::end()
     mainWindow->iconsUpdate();
 }
 
-void MainWindow::musicDownload()
-{
-    medyaIndirme(ui->musicDownloadUrl->text());
-}
-
 // https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n9.0-latest-win64-lgpl-9.0.zip
+
+bool MainWindow::ffmpegControl()
+{
+#ifdef WIN32
+
+    if(!QFile::exists("../ffmpeg/ffmpeg-n9.0-latest-win64-lgpl-9.0/bin/ffmpeg.exe"))
+    {
+        connect(ui->ffmpegTools, &QPushButton::clicked, this, &MainWindow::ffmpegDownload_clicked);
+
+        return false;
+    }
+    else
+    {
+        ui->ffmpegTools->setEnabled(false);
+
+        disconnect(ui->ffmpegTools, &QPushButton::clicked, this, &MainWindow::ffmpegDownload_clicked);
+
+        return true;
+    }
+
+#else
+
+    QProcess process;
+    process.start("ffmpeg", QStringList() << "-version");
+    process.waitForFinished();
+
+    if (process.exitCode() == 0) {
+        return true;
+    } else {
+        return false;
+    }
+
+#endif
+}
 
 void MainWindow::ffmpegDownload_clicked()
 {
+#ifdef WIN32
 
+    ui->log->append("[FFmpeg]: İndiriliyor...");
+
+    QNetworkAccessManager* mngr = new QNetworkAccessManager(this);
+    connect(mngr, &QNetworkAccessManager::finished, this,
+    [=](QNetworkReply* reply){
+        QFile tempZip("../temp/it.zip");
+
+        ui->log->append("Ok\n\n");
+
+        if(tempZip.open(QFile::OpenModeFlag::WriteOnly))
+        {
+            tempZip.write(reply->readAll());
+        }
+        tempZip.close();
+
+        ui->log->append("[FFmpeg]: Ayrıştırılıyor...");
+
+        system("tar -xf ../temp/it.zip -C ../ffmpeg");
+
+        QFile::remove("../temp/it.zip");
+
+        ui->log->append("Ok\n\n");
+
+        QMessageBox(QMessageBox::Icon::Information, "Başarılı!", "FFmpeg aracı indirildi.");
+
+        musicDownloadControl();
+
+        reply->deleteLater();
+        mngr->deleteLater();
+    });
+
+    mngr->get(QNetworkRequest(QUrl("https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n9.0-latest-win64-lgpl-9.0.zip")));
+#else
+
+    QMessageBox(QMessageBox::Icon::Question, "Uyarı!", "FFmpeg aracını indirmek için lütfen paket yöneticisinizi kullanın(örn: sudo apt install ffmpeg).");
+
+    ffmpegControl();
+
+#endif
+}
+bool MainWindow::ytDlpControl()
+{
+#ifdef WIN32
+    if(!QFile::exists("../yt-dlp/yt-dlp.exe"))
+#else
+    if(!QFile::exists("../yt-dlp/yt-dlp_linux"))
+#endif
+    {
+        disconnect(ui->ytDlpTools, &QPushButton::clicked, this, &MainWindow::ytDlpUpdate_clicked);
+
+        ui->ytDlpTools->setText("Yt-Dlp Aracını İndir");
+
+        iconsUpdate();
+
+        connect(ui->ytDlpTools, &QPushButton::clicked, this, &MainWindow::ytDlpDownload_clicked);
+
+        return false;
+    }
+    else
+    {
+        disconnect(ui->ytDlpTools, &QPushButton::clicked, this, &MainWindow::ytDlpDownload_clicked);
+
+        ui->ytDlpTools->setText("Yt-Dlp Aracını Güncelle");
+
+        iconsUpdate();
+
+        connect(ui->ytDlpTools, &QPushButton::clicked, this, &MainWindow::ytDlpUpdate_clicked);
+
+        return true;
+    }
 }
 
 void MainWindow::ytDlpDownload_clicked()
 {
+    ui->log->append("[Yt-Dlp]: Araç indiriliyor...");
 
+    QNetworkAccessManager* mngr = new QNetworkAccessManager(this);
+    connect(mngr, &QNetworkAccessManager::finished, this,
+            [=](QNetworkReply* reply){
+
+                ui->log->append("Ok\n\n");
+
+                QFile tempZip("../temp/yt-dlp.zip");
+                if(tempZip.open(QFile::OpenModeFlag::WriteOnly))
+                {
+                    tempZip.write(reply->readAll());
+                }
+                tempZip.close();
+
+                ui->log->append("[Yt-Dlp]: Araç ayrıştırılıyor...");
+
+#ifdef WIN32
+                system("tar -xf ../temp/yt-dlp.zip -C ../yt-dlp");
+#else
+                system("unzip -o ../temp/yt-dlp.zip -d ../yt-dlp");
+#endif
+                QFile::remove("../temp/yt-dlp.zip");
+
+                ui->log->append("Ok\n\n");
+
+                QMessageBox(QMessageBox::Icon::Information, "Başarılı!", "Yt-dlp aracı indirildi.");
+
+                musicDownloadControl();
+
+                reply->deleteLater();
+                mngr->deleteLater();
+            });
+#ifdef WIN32
+    mngr->get(QNetworkRequest(QUrl("https://github.com/yt-dlp/yt-dlp/releases/download/2026.10.26/yt-dlp_win.zip")));
+#else
+    mngr->get(QNetworkRequest(QUrl("https://github.com/yt-dlp/yt-dlp/releases/download/2026.10.26/yt-dlp_linux.zip")));
+#endif
 }
 
 void MainWindow::ytDlpUpdate_clicked()
 {
+    QProcess *updateProc = new QProcess(this);
+    connect(updateProc, &QProcess::readyReadStandardOutput, this, [=](){ui->log->append(updateProc->readAllStandardOutput());});
+    connect(updateProc, &QProcess::readyReadStandardError, this, [=](){ui->log->append(updateProc->readAllStandardOutput());});
+    connect(updateProc, &QProcess::finished, this, [=](){updateProc->deleteLater();});
 
+#ifdef WIN32
+    updateProc->start("..\\yt-dlp\\yt-dlp.exe", {"-U"});
+#else
+    updateProc->start("..\\yt-dlp\\yt-dlp_linux", {"-U"});
+#endif
+}
+
+void MainWindow::medyaIndirme(QString url)
+{
+    if(url.contains("spotify.com"))
+    {
+        QMessageBox::information(this, "Uyarı!", "Spotify modülünü yükleyin.");
+    }
+    else
+    {
+        ui->log->append("[Download]: Müzik indiriliyor...\n\n");
+
+        QProcess *ytDlpIndirme = new QProcess(this);
+        connect(ytDlpIndirme, &QProcess::finished, this,
+                [=](int, QProcess::ExitStatus)
+                {
+                    isPlaylists = false;
+                    player->pause();
+                    iMusic = 0;
+
+                    ui->log->append("\n\n[Download]: Müzik İndirildi");
+
+                    musicsRead();
+                    allMusicRead();
+                });
+        connect(ytDlpIndirme, &QProcess::readyReadStandardOutput,
+                this,
+                [this, ytDlpIndirme]()
+                {
+                    QString cikti = ytDlpIndirme->readAllStandardOutput();
+
+                    ui->log->append(cikti);
+                });
+
+        connect(ytDlpIndirme, &QProcess::readyReadStandardError,
+                this,
+                [this, ytDlpIndirme]()
+                {
+                    QString hata = ytDlpIndirme->readAllStandardError();
+
+                    ui->log->append(hata);
+                });
+
+        QStringList args;
+
+#ifdef WIN32
+
+        args << "--js-runtimes" << "node"
+             << "--cookies" << "cookies.txt"
+             << "--ffmpeg-location" << "..\\ffmpeg\\ffmpeg-n9.0-latest-win64-lgpl-9.0\\bin"
+             << "-f" << "bestaudio/best"
+             << "-x"
+             << "--audio-format" << "mp3"
+             << "--audio-quality" << "0"
+             << "--embed-thumbnail"
+             << "--add-metadata"
+             << "-P" << "..\\downloads"
+             << "-o" << "%(title)s.%(ext)s"
+             << url;
+
+        ytDlpIndirme->start("..\\yt-dlp\\yt-dlp.exe", args);
+
+#else
+
+        args << "--js-runtimes" << "node"
+             << "--cookies" << "cookies.txt"
+             << "-f" << "bestaudio/best"
+             << "-x"
+             << "--audio-format" << "mp3"
+             << "--audio-quality" << "0"
+             << "--embed-thumbnail"
+             << "--add-metadata"
+             << "-P" << "../downloads"
+             << "-o" << "%(title)s.%(ext)s"
+             << url;
+
+        ytDlpIndirme->start("../yt-dlp/yt-dlp", args);
+
+#endif
+    }
+}
+
+void MainWindow::musicDownloadControl()
+{
+    if(ffmpegControl() && ytDlpControl())
+    {
+        ui->musicDownloadUrl->setEnabled(true);
+        ui->downloadButton->setEnabled(true);
+    }
+    else
+    {
+        ui->musicDownloadUrl->setEnabled(false);
+        ui->downloadButton->setEnabled(false);
+    }
 }
