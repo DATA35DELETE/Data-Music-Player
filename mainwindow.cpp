@@ -783,8 +783,8 @@ void MainWindow::connectors()
     QHotkey *playPauseShortcut = new QHotkey(QKeySequence(Qt::Key_MediaPlay), true, this);
     QHotkey *playPauseShortcut2 = new QHotkey(QKeySequence(Qt::Key_MediaTogglePlayPause), true, this);
 #else
-    QHotkey *playPauseShortcut = new QHotkey(QKeySequence(Qt::Key_MediaPlay), 0}, true, this);
-    QHotkey *playPauseShortcut2 = new QHotkey(QKeySequence(Qt::Key_MediaTogglePlayPause), 0}, true, this);
+    QHotkey *playPauseShortcut = new QHotkey(QKeySequence(Qt::Key_MediaPlay), true, this);
+    QHotkey *playPauseShortcut2 = new QHotkey(QKeySequence(Qt::Key_MediaTogglePlayPause), true, this);
 #endif
 
     connect(playPauseShortcut, &QHotkey::activated, this, &MainWindow::musicControl_clicked);
@@ -2057,8 +2057,15 @@ bool MainWindow::ffmpegControl()
     process.waitForFinished();
 
     if (process.exitCode() == 0) {
+
+        ui->ffmpegTools->setEnabled(false);
+
+        disconnect(ui->ffmpegTools, &QPushButton::clicked, this, &MainWindow::ffmpegDownload_clicked);
+
         return true;
     } else {
+        connect(ui->ffmpegTools, &QPushButton::clicked, this, &MainWindow::ffmpegDownload_clicked);
+
         return false;
     }
 
@@ -2092,7 +2099,7 @@ void MainWindow::ffmpegDownload_clicked()
 
         ui->log->append("Ok\n\n");
 
-        QMessageBox(QMessageBox::Icon::Information, "Başarılı!", "FFmpeg aracı indirildi.");
+        QMessageBox(QMessageBox::Icon::Information, "Başarılı!", "FFmpeg aracı indirildi.").exec();
 
         musicDownloadControl();
 
@@ -2103,7 +2110,7 @@ void MainWindow::ffmpegDownload_clicked()
     mngr->get(QNetworkRequest(QUrl("https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n9.0-latest-win64-lgpl-9.0.zip")));
 #else
 
-    QMessageBox(QMessageBox::Icon::Question, "Uyarı!", "FFmpeg aracını indirmek için lütfen paket yöneticisinizi kullanın(örn: sudo apt install ffmpeg).");
+    QMessageBox(QMessageBox::Icon::Question, "Uyarı!", "FFmpeg aracını indirmek için lütfen paket yöneticisinizi kullanın(örn: sudo apt install ffmpeg).").exec();
 
     ffmpegControl();
 
@@ -2169,7 +2176,7 @@ void MainWindow::ytDlpDownload_clicked()
 
                 ui->log->append("Ok\n\n");
 
-                QMessageBox(QMessageBox::Icon::Information, "Başarılı!", "Yt-dlp aracı indirildi.");
+                QMessageBox(QMessageBox::Icon::Information, "Başarılı!", "Yt-dlp aracı indirildi.").exec();
 
                 musicDownloadControl();
 
@@ -2271,7 +2278,7 @@ void MainWindow::medyaIndirme(QString url)
              << "-o" << "%(title)s.%(ext)s"
              << url;
 
-        ytDlpIndirme->start("../yt-dlp/yt-dlp", args);
+        ytDlpIndirme->start("../yt-dlp/yt-dlp_linux", args);
 
 #endif
     }
