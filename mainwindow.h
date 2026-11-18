@@ -104,10 +104,12 @@ public slots:
     void settingsSave_clicked();
     void musicsPathAddingButton_clicked();
 
-    void ytDlpIndirme_clicked();
-    void ytDlpIndirme_clicked2();
+    void musicDownload();
 
-    void ffmpegIndirme_clicked();
+    void ytDlpDownload_clicked();
+    void ytDlpUpdate_clicked();
+
+    void ffmpegDownload_clicked();
 
     //void ayarlariKaydet_clicked();
 };
