@@ -23,6 +23,7 @@ bool isMusicCard = false;
 bool isAutoThemeUpdate = true;
 
 QMediaPlayer *player;
+QMediaDevices *devices;
 QAudioOutput *output;
 
 MainWindow *mainWindow;
@@ -69,6 +70,8 @@ MainWindow::MainWindow(QWidget *parent)
     mainWindow = this;
 
     player = new QMediaPlayer(this);
+
+    devices = new QMediaDevices(this);
 
     output = new QAudioOutput(this);
     output->setVolume((float)ui->musicVolume->value() / 100.0f);
@@ -955,6 +958,10 @@ void MainWindow::connectors()
 
     connect(ui->musicDownloadUrl, &QLineEdit::returnPressed, this, [=](){medyaIndirme(ui->musicDownloadUrl->text());});
     connect(ui->downloadButton, &QPushButton::clicked, this, [=](){medyaIndirme(ui->musicDownloadUrl->text());});
+
+    connect(devices, &QMediaDevices::audioOutputsChanged, this, [this]() {
+        output->setDevice(QMediaDevices::defaultAudioOutput());
+    });
 }
 
 void MainWindow::musicsRead()
@@ -1107,9 +1114,12 @@ void MainWindow::readPlaylist(QString playlistPath)
             if(line.contains("\n"))
                 continue;
 
-            playlistsMusics.append(line);
+            if(musics.contains(line))
+                playlistsMusics.append(line);
         }
     }
+
+    playlistFile.close();
 }
 
 void MainWindow::allMusicRead()

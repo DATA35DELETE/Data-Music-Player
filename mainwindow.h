@@ -23,6 +23,8 @@
 #include <QDesktopServices>
 #include <QDialog>
 #include <QKeySequence>
+#include <QAudioDevice>
+#include <QMediaDevices>
 
 #include <qhotkey.h>
 

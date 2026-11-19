@@ -30,6 +30,8 @@ void playlistadd::start(QStringList musicsPath)
 {
     this->setVisible(true);
 
+    ui->playlistAddMusic->clear();
+
     for (auto i : musicsPath) {
         QDir muzikYollariDir(i);
         muzikYollariDir.setSorting(QDir::SortFlag::Time);
