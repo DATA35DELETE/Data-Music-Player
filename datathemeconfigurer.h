@@ -35,6 +35,7 @@ enum Themes{
     YellowLight, // #7F5F00
     OrangeDark,  // #FF6D00
     OrangeLight, // #BF360C
+    Default,
 };
 
 class dataThemeConfigurer : public QObject

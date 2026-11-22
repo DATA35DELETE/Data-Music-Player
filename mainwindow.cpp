@@ -399,6 +399,18 @@ void MainWindow::connectors()
 
                 iconsUpdate();
             });
+    connect(ui->actionVarsay_lan, &QAction::triggered, this,
+            [=](){
+                configurer->setApplicationTheme(qApp, Themes::Default);
+                configurer->setTheme(Themes::Default);
+
+                QSettings settFile("./config.ini", QSettings::IniFormat);
+                settFile.setValue("theme", "default");
+
+                settingsLoad();
+
+                iconsUpdate();
+            });
     connect(ui->actionGiri, &QAction::triggered, this,
             [=](){
                 ui->pages->setCurrentWidget(ui->homePage);
@@ -516,6 +528,7 @@ void MainWindow::connectors()
 
                         QMessageBox(QMessageBox::Icon::Information, "Başarılı!", "Müzik yolu başarılı bir şekilde eklendi.");
                     }
+                    musicsPath.close();
                 }
                 else
                 {
@@ -548,25 +561,33 @@ void MainWindow::connectors()
                 button.setText("Sil");
                 connect(&button, &QPushButton::clicked, this,
                         [=, &comboBox, &d](){
+                            QStringList context;
+
                             QFile musicsPath("../musicPath.sett");
-                            if(musicsPath.open(QFile::OpenModeFlag::ReadWrite))
+                            if(musicsPath.open(QFile::OpenModeFlag::ReadOnly))
                             {
                                 QTextStream stream(&musicsPath);
-                                QStringList context;
 
                                 while(!stream.atEnd())
                                 {
                                     context.append(stream.readLine());
                                 }
+                            }
+                            musicsPath.close();
 
+                            QFile musicsPath2("../musicPath.sett");
+                            if(musicsPath2.open(QFile::OpenModeFlag::WriteOnly))
+                            {
+                                QTextStream stream(&musicsPath2);
                                 context.remove(comboBox.currentIndex());
-
-                                stream.seek(0);
 
                                 for (auto i : context) {
                                     stream << i << '\n';
                                 }
                             }
+                            musicsPath2.close();
+
+                            d.close();
 
                             settingsLoad();
 
@@ -644,6 +665,16 @@ void MainWindow::connectors()
             [=](){
                 ui->pages->setCurrentWidget(ui->musicDonwloadPage);
             });
+    connect(ui->actionYeniden_Ba_lat, &QAction::triggered, this, [=](){
+        QProcess *deadProc = new QProcess();
+#ifdef WIN32
+        deadProc->start("dataMusicPlayer.exe");
+#else
+        deadProc->start("./dataMusicPlayer");
+#endif
+
+        qApp->quit();
+    });
 
 
     /* Menubar Tema */
@@ -821,7 +852,7 @@ void MainWindow::connectors()
 
         player->play();
     });
-    connect(ui->musicsPathList, &QListWidget::currentRowChanged, this,
+    /*connect(ui->musicsPathList, &QListWidget::currentRowChanged, this,
             [=](int i){
                 if(i < 0)
                     return;
@@ -845,6 +876,7 @@ void MainWindow::connectors()
                         stream << i << '\n';
                     }
                 }
+                musicsPath.close();
 
                 settingsLoad();
 
@@ -852,7 +884,7 @@ void MainWindow::connectors()
                 allMusicRead();
 
                 iconsUpdate();
-            });
+            });*/
     connect(ui->playlistsList, &QListWidget::currentRowChanged, this,
     [=](int i){
 
@@ -931,7 +963,16 @@ void MainWindow::connectors()
         allMusicRead();
     });
 
-    connect(ui->musicCardButton, &QPushButton::clicked, this, [=](){card->start();});
+    connect(ui->musicCardButton, &QPushButton::clicked, this, [=](){
+        if(!isPlaylists)
+        {
+            if(!musics.isEmpty())
+                card->start();
+        }
+        else
+            if(!playlistsMusics.isEmpty())
+                card->start();
+    });
 
     connect(ui->settingsSave, &QPushButton::clicked, this, &MainWindow::settingsSave_clicked);
     connect(ui->musicsPathAddingButton, &QPushButton::clicked, this, &MainWindow::musicsPathAddingButton_clicked);
@@ -962,6 +1003,65 @@ void MainWindow::connectors()
     connect(devices, &QMediaDevices::audioOutputsChanged, this, [this]() {
         output->setDevice(QMediaDevices::defaultAudioOutput());
     });
+
+    connect(ui->musicsPathRemovingButton, &QPushButton::clicked, this, [=](){
+        QDialog d;
+                d.setWindowIconText("Müzik Yolu Silme");
+                QVBoxLayout boxLayout;
+
+                QLabel label;
+                label.setText("Silinecek olan müzik yolunu seçiniz.");
+                boxLayout.addWidget(&label);
+
+                QComboBox comboBox;
+                for (auto i : muzikYollari) {
+                    comboBox.addItem(i);
+                }
+                boxLayout.addWidget(&comboBox);
+                d.setLayout(&boxLayout);
+
+                QPushButton button;
+                button.setText("Sil");
+                connect(&button, &QPushButton::clicked, this,
+                        [=, &comboBox, &d](){
+                            QStringList context;
+
+                            QFile musicsPath("../musicPath.sett");
+                            if(musicsPath.open(QFile::OpenModeFlag::ReadOnly))
+                            {
+                                QTextStream stream(&musicsPath);
+
+                                while(!stream.atEnd())
+                                {
+                                    context.append(stream.readLine());
+                                }
+                            }
+                            musicsPath.close();
+
+                            QFile musicsPath2("../musicPath.sett");
+                            if(musicsPath2.open(QFile::OpenModeFlag::WriteOnly))
+                            {
+                                QTextStream stream(&musicsPath2);
+                                context.remove(comboBox.currentIndex());
+
+                                for (auto i : context) {
+                                    stream << i << '\n';
+                                }
+                            }
+                            musicsPath2.close();
+
+                            d.close();
+
+                            settingsLoad();
+
+                            musicsRead();
+                            allMusicRead();
+
+                            iconsUpdate();
+                        });
+                boxLayout.addWidget(&button);
+
+                d.exec();});
 }
 
 void MainWindow::musicsRead()
@@ -1495,16 +1595,16 @@ void MainWindow::player_playingChanged(bool playing)
     if(playing)
     {
         if(!isMusicCard)
-            configurer->setIcon(ui->musicControl, QString::fromUtf8(":/assets/icons/play.svg"));
+            configurer->setIcon(ui->musicControl, QString::fromUtf8(":/assets/icons/pause.svg"));
         else
-            configurer->setIcon(card->musicCardControl, QString::fromUtf8(":/assets/icons/play.svg"));
+            configurer->setIcon(card->musicCardControl, QString::fromUtf8(":/assets/icons/pause.svg"));
     }
     else
     {
         if(!isMusicCard)
-            configurer->setIcon(ui->musicControl, QString::fromUtf8(":/assets/icons/pause.svg"));
+            configurer->setIcon(ui->musicControl, QString::fromUtf8(":/assets/icons/play.svg"));
         else
-            configurer->setIcon(card->musicCardControl, QString::fromUtf8(":/assets/icons/pause.svg"));
+            configurer->setIcon(card->musicCardControl, QString::fromUtf8(":/assets/icons/play.svg"));
     }
 }
 
@@ -1879,6 +1979,13 @@ void MainWindow::settingsLoad()
 
             ui->themeColor->setCurrentIndex(17);
         }
+        else if(theme.contains("default"))
+        {
+            configurer->setApplicationTheme(qApp, Themes::Default);
+            configurer->setTheme(Themes::Default);
+
+            ui->themeColor->setCurrentIndex(18);
+        }
 
         if(settFile.value("autoThemeUpdate").isNull())
         {
@@ -1942,6 +2049,8 @@ void MainWindow::settingsSave_clicked()
         settFile.setValue("theme", "orangeDark");
     else if(ui->themeColor->currentIndex() == 17)
         settFile.setValue("theme", "orangeLight");
+    else if(ui->themeColor->currentIndex() == 18)
+        settFile.setValue("theme", "default");
 
     if(ui->isAutoThemeUpdateCheck->isChecked())
         settFile.setValue("autoThemeUpdate", "1");
@@ -1957,6 +2066,7 @@ void MainWindow::settingsSave_clicked()
             stream << ui->musicsPathList->item(i)->text() << '\n';
         }
     }
+    musicsPath.close();
 
     musicsRead();
     allMusicRead();

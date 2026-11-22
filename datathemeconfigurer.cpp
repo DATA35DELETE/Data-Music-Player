@@ -232,6 +232,10 @@ void dataThemeConfigurer::setApplicationTheme(QApplication* appPtr)
     {
         qssFile = new QFile("dataTheme/orange-light.qss");
     }
+    else if(theme == Themes::Default)
+    {
+        qssFile = new QFile();
+    }
 
     if(qssFile->open(QFile::OpenModeFlag::ReadOnly))
     {
@@ -394,14 +398,18 @@ void dataThemeConfigurer::setApplicationTheme(QApplication* appPtr, Themes userT
     }
     else if(userTheme == Themes::OrangeLight)
     {
-        qssFile = new QFile("dataTheme/orange-light.qss");
+        qssFile = new QFile("dataTheme/orange-dark.qss");
+    }
+    else if(userTheme == Themes::Default)
+    {
+        qssFile = new QFile();
     }
 
     if(qssFile->open(QFile::OpenModeFlag::ReadOnly))
     {
         qss = QTextStream(qssFile).readAll();
-        qssFile->close();
     }
+    qssFile->close();
 
     if(userTheme == Themes::White || userTheme == Themes::BlueLight || userTheme == Themes::RedLight || userTheme == Themes::GreenLight || userTheme == Themes::GrayLigth || userTheme == Themes::CyanLight || userTheme == Themes::YellowLight || userTheme == Themes::OrangeLight || userTheme == Themes::PurpleLight)
     {
@@ -437,6 +445,7 @@ void dataThemeConfigurer::setApplicationTheme(QApplication* appPtr, Themes userT
     else if(userTheme == Themes::YellowLight) color = "#7F5F00";
     else if(userTheme == Themes::OrangeDark) color = "#FF6D00";
     else if(userTheme == Themes::OrangeLight) color = "#BF360C";
+    else if(userTheme == Themes::Default) color = "#FFFFFF";
 
     if(downArrow.open(QFile::WriteOnly))
     {
@@ -469,6 +478,8 @@ void dataThemeConfigurer::setApplicationTheme(QApplication* appPtr, Themes userT
     else if(userTheme == Themes::YellowLight) color = "#7F5F00";
     else if(userTheme == Themes::OrangeDark) color = "#FF6D00";
     else if(userTheme == Themes::OrangeLight) color = "#BF360C";
+    else if(userTheme == Themes::Default) color = "#FFFFFF";
+
 
     if(upArrow.open(QFile::WriteOnly))
     {
@@ -515,6 +526,7 @@ void dataThemeConfigurer::setIcon(QPushButton* buttonPtr, QString path)
     else if(theme == Themes::YellowLight) color = "#7F5F00";
     else if(theme == Themes::OrangeDark) color = "#FF6D00";
     else if(theme == Themes::OrangeLight) color = "#BF360C";
+    else if(theme == Themes::Default) color = "#FFFFFF";
 
     originalContext.replace("currentColor", color);
 
@@ -560,6 +572,7 @@ void dataThemeConfigurer::setIcon(QLabel* labelPtr, QString path)
     else if(theme == Themes::YellowLight) color = "#7F5F00";
     else if(theme == Themes::OrangeDark) color = "#FF6D00";
     else if(theme == Themes::OrangeLight) color = "#BF360C";
+    else if(theme == Themes::Default) color = "#FFFFFF";
 
     originalContext.replace("currentColor", color);
 
@@ -605,6 +618,7 @@ void dataThemeConfigurer::setIcon(QMainWindow* mainWindowPtr, QString path)
     else if(theme == Themes::YellowLight) color = "#7F5F00";
     else if(theme == Themes::OrangeDark) color = "#FF6D00";
     else if(theme == Themes::OrangeLight) color = "#BF360C";
+    else if(theme == Themes::Default) color = "#FFFFFF";
 
     originalContext.replace("currentColor", color);
 
@@ -649,6 +663,7 @@ void dataThemeConfigurer::setIcon(QAction* actionPtr, QString path)
     else if(theme == Themes::YellowLight) color = "#7F5F00";
     else if(theme == Themes::OrangeDark) color = "#FF6D00";
     else if(theme == Themes::OrangeLight) color = "#BF360C";
+    else if(theme == Themes::Default) color = "#FFFFFF";
 
     originalContext.replace("currentColor", color);
 
@@ -693,6 +708,7 @@ void dataThemeConfigurer::setIcon(QString path)
     else if(theme == Themes::YellowLight) color = "#7F5F00";
     else if(theme == Themes::OrangeDark) color = "#FF6D00";
     else if(theme == Themes::OrangeLight) color = "#BF360C";
+    else if(theme == Themes::Default) color = "#FFFFFF";
 
     originalContext.replace("currentColor", color);
 
@@ -738,6 +754,7 @@ void dataThemeConfigurer::setIcon(QMessageBox* messageBoxPtr, QString path)
     else if(theme == Themes::YellowLight) color = "#7F5F00";
     else if(theme == Themes::OrangeDark) color = "#FF6D00";
     else if(theme == Themes::OrangeLight) color = "#BF360C";
+    else if(theme == Themes::Default) color = "#FFFFFF";
 
     originalContext.replace("currentColor", color);
 
@@ -782,6 +799,7 @@ void dataThemeConfigurer::setIcon(QFileDialog* fileDialogPtr, QString path)
     else if(theme == Themes::YellowLight) color = "#7F5F00";
     else if(theme == Themes::OrangeDark) color = "#FF6D00";
     else if(theme == Themes::OrangeLight) color = "#BF360C";
+    else if(theme == Themes::Default) color = "#FFFFFF";
 
     originalContext.replace("currentColor", color);
 
