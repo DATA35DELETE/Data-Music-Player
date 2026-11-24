@@ -39,30 +39,30 @@
     [=](int){
         QFile::remove("dataTheme/it.zip");
 
-        QDir themesFiles("dataTheme/Data-s-QSS-1.2v");
+        QDir themesFiles("dataTheme/Data-s-QSS-1.3v");
         themesFiles.setFilter(QDir::Filter::Files);
 
         for (auto i : themesFiles.entryList()) {
             if(i.contains("LICENSE"))
-                QFile::remove(QFileInfo(QString(i).prepend("dataTheme/Data-s-QSS-1.2v/")).filePath());
+                QFile::remove(QFileInfo(QString(i).prepend("dataTheme/Data-s-QSS-1.3v/")).filePath());
 
-            QFile::copy(QFileInfo(QString(i).prepend("dataTheme/Data-s-QSS-1.2v/")).filePath(), QFileInfo(QString(i).prepend("dataTheme/")).filePath());
-            QFile::remove(QFileInfo(QString(i).prepend("dataTheme/Data-s-QSS-1.2v/")).filePath());
+            QFile::copy(QFileInfo(QString(i).prepend("dataTheme/Data-s-QSS-1.3v/")).filePath(), QFileInfo(QString(i).prepend("dataTheme/")).filePath());
+            QFile::remove(QFileInfo(QString(i).prepend("dataTheme/Data-s-QSS-1.3v/")).filePath());
         }
 
         QDir().mkdir("dataTheme/icons");
 
-        QDir iconsFiles("dataTheme/Data-s-QSS-1.2v/icons");
+        QDir iconsFiles("dataTheme/Data-s-QSS-1.3v/icons");
         iconsFiles.setFilter(QDir::Filter::Files);
 
         for (auto i : iconsFiles.entryList()) {
-            QFile::copy(QFileInfo(QString(i).prepend("dataTheme/Data-s-QSS-1.2v/icons/")).filePath(), QFileInfo(QString(i).prepend("dataTheme/icons/")).filePath());
-            QFile::remove(QFileInfo(QString(i).prepend("dataTheme/Data-s-QSS-1.2v/icons/")).filePath());
+            QFile::copy(QFileInfo(QString(i).prepend("dataTheme/Data-s-QSS-1.3v/icons/")).filePath(), QFileInfo(QString(i).prepend("dataTheme/icons/")).filePath());
+            QFile::remove(QFileInfo(QString(i).prepend("dataTheme/Data-s-QSS-1.3v/icons/")).filePath());
         }
 
-        QDir().rmdir("dataTheme/Data-s-QSS-1.2v/icons");
+        QDir().rmdir("dataTheme/Data-s-QSS-1.3v/icons");
 
-        QDir().rmdir("dataTheme/Data-s-QSS-1.2v");
+        QDir().rmdir("dataTheme/Data-s-QSS-1.3v");
 
         setTheme(userTheme);
         setApplicationTheme(appPtr);
@@ -72,7 +72,7 @@
         unzipProcess->deleteLater();
     });
 
-    mngr->get(QNetworkRequest(QUrl("https://github.com/DATA35DELETE/Data-s-QSS/archive/refs/tags/1.2v.zip")));
+    mngr->get(QNetworkRequest(QUrl("https://github.com/DATA35DELETE/Data-s-QSS/archive/refs/tags/1.3v.zip")));
 }*/
 dataThemeConfigurer::dataThemeConfigurer(bool){ emit initFinished();}
 dataThemeConfigurer::dataThemeConfigurer()
@@ -119,37 +119,37 @@ dataThemeConfigurer::dataThemeConfigurer()
             [=](int){
                 QFile::remove("dataTheme/it.zip");
 
-                QDir themesFiles("dataTheme/Data-s-QSS-1.2v");
+                QDir themesFiles("dataTheme/Data-s-QSS-1.3v");
                 themesFiles.setFilter(QDir::Filter::Files);
 
                 for (auto i : themesFiles.entryList()) {
                     if(i.contains("LICENSE"))
-                        QFile::remove(QFileInfo(QString(i).prepend("dataTheme/Data-s-QSS-1.2v/")).filePath());
+                        QFile::remove(QFileInfo(QString(i).prepend("dataTheme/Data-s-QSS-1.3v/")).filePath());
 
-                    QFile::copy(QFileInfo(QString(i).prepend("dataTheme/Data-s-QSS-1.2v/")).filePath(), QFileInfo(QString(i).prepend("dataTheme/")).filePath());
-                    QFile::remove(QFileInfo(QString(i).prepend("dataTheme/Data-s-QSS-1.2v/")).filePath());
+                    QFile::copy(QFileInfo(QString(i).prepend("dataTheme/Data-s-QSS-1.3v/")).filePath(), QFileInfo(QString(i).prepend("dataTheme/")).filePath());
+                    QFile::remove(QFileInfo(QString(i).prepend("dataTheme/Data-s-QSS-1.3v/")).filePath());
                 }
 
                 QDir().mkdir("dataTheme/icons");
 
-                QDir iconsFiles("dataTheme/Data-s-QSS-1.2v/icons");
+                QDir iconsFiles("dataTheme/Data-s-QSS-1.3v/icons");
                 iconsFiles.setFilter(QDir::Filter::Files);
 
                 for (auto i : iconsFiles.entryList()) {
-                    QFile::copy(QFileInfo(QString(i).prepend("dataTheme/Data-s-QSS-1.2v/icons/")).filePath(), QFileInfo(QString(i).prepend("dataTheme/icons/")).filePath());
-                    QFile::remove(QFileInfo(QString(i).prepend("dataTheme/Data-s-QSS-1.2v/icons/")).filePath());
+                    QFile::copy(QFileInfo(QString(i).prepend("dataTheme/Data-s-QSS-1.3v/icons/")).filePath(), QFileInfo(QString(i).prepend("dataTheme/icons/")).filePath());
+                    QFile::remove(QFileInfo(QString(i).prepend("dataTheme/Data-s-QSS-1.3v/icons/")).filePath());
                 }
 
-                QDir().rmdir("dataTheme/Data-s-QSS-1.2v/icons");
+                QDir().rmdir("dataTheme/Data-s-QSS-1.3v/icons");
 
-                QDir().rmdir("dataTheme/Data-s-QSS-1.2v");
+                QDir().rmdir("dataTheme/Data-s-QSS-1.3v");
 
                 emit initFinished();
 
                 unzipProcess->deleteLater();
             });
 
-    mngr->get(QNetworkRequest(QUrl("https://github.com/DATA35DELETE/Data-s-QSS/archive/refs/tags/1.2v.zip")));
+    mngr->get(QNetworkRequest(QUrl("https://github.com/DATA35DELETE/Data-s-QSS/archive/refs/tags/1.3v.zip")));
 }
 
 void dataThemeConfigurer::setTheme(Themes userTheme) {theme = userTheme;};

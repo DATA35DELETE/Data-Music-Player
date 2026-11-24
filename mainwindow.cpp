@@ -34,6 +34,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    ui->allMusicsList->setUniformItemSizes(true);
+
     QSettings settFile("./config.ini", QSettings::IniFormat);
     if(settFile.value("autoThemeUpdate").isNull())
     {
@@ -824,13 +826,13 @@ void MainWindow::connectors()
     connect(playPauseShortcut, &QHotkey::activated, this, &MainWindow::musicControl_clicked);
     connect(playPauseShortcut2, &QHotkey::activated, this, &MainWindow::musicControl_clicked);
 
-    connect(ui->allMusicsList, &QListWidget::currentRowChanged, this,
-    [=](int i){
+    connect(ui->allMusicsList, &QListWidget::itemDoubleClicked, this,
+    [=](QListWidgetItem* i){
 
-        if(i < 0)
+        if(i == nullptr)
             return;
 
-        iMusic = i;
+        iMusic = ui->allMusicsList->row(i);
 
         player->stop();
 
@@ -838,13 +840,13 @@ void MainWindow::connectors()
 
         player->play();
     });
-    connect(ui->listWidget, &QListWidget::currentRowChanged, this,
-    [=](int i){
+    connect(ui->listWidget, &QListWidget::itemDoubleClicked, this,
+        [=](QListWidgetItem* i){
 
-        if(i < 0)
+        if(i == nullptr)
             return;
 
-        iMusic = i;
+        iMusic = ui->listWidget->row(i);
 
         player->stop();
 
@@ -885,22 +887,22 @@ void MainWindow::connectors()
 
                 iconsUpdate();
             });*/
-    connect(ui->playlistsList, &QListWidget::currentRowChanged, this,
-    [=](int i){
+    connect(ui->playlistsList, &QListWidget::itemDoubleClicked, this,
+        [=](QListWidgetItem* i){
 
-        if(i < 0)
+        if(i == nullptr)
             return;
 
         isPlaylists = true;
         player->pause();
         iMusic = 0;
 
-        readPlaylist(QString(ui->playlistsList->itemWidget(ui->playlistsList->item(i))->toolTip()).prepend("../playlists/"));
+        readPlaylist(QString(ui->playlistsList->itemWidget(i)->toolTip()).prepend("../playlists/"));
 
         allMusicRead();
 
-        ui->playlistIcon->setPixmap(ui->playlistsList->itemWidget(ui->playlistsList->item(i))->findChild<QLabel*>("iconLabel")->pixmap());
-        ui->playlistName->setText(ui->playlistsList->itemWidget(ui->playlistsList->item(i))->findChild<QLabel*>("nameLabel")->text());
+        ui->playlistIcon->setPixmap(ui->playlistsList->itemWidget(i)->findChild<QLabel*>("iconLabel")->pixmap());
+        ui->playlistName->setText(ui->playlistsList->itemWidget(i)->findChild<QLabel*>("nameLabel")->text());
         ui->playlistMusicCount->setText(QString::number(playlistsMusics.count()).append(" Şarkı"));
 
         ui->pages->setCurrentWidget(ui->playlistsPage);
@@ -952,6 +954,7 @@ void MainWindow::connectors()
         player->pause();
         iMusic = 0;
 
+        musicsRead();
         allMusicRead();
     });
     connect(ui->playlistReloader, &QPushButton::clicked, this,
@@ -960,6 +963,7 @@ void MainWindow::connectors()
         player->pause();
         iMusic = 0;
 
+        musicsRead();
         allMusicRead();
     });
 
@@ -1304,11 +1308,25 @@ void MainWindow::allMusicRead()
                     });
                 }
 
+                QAction *remove = contextMenu.addAction("Sil");
+                connect(remove, &QAction::triggered, this,
+                        [=](){
+                            if(QFile::remove(anaWidget->toolTip()))
+                            {
+                                isPlaylists = false;
+                                player->pause();
+                                iMusic = 0;
+
+                                musicsRead();
+                                allMusicRead();
+                            }
+                        });
+
                 contextMenu.exec(anaWidget->mapToGlobal(pos));
             });
         }
 
-        QHBoxLayout *anaLayout = new QHBoxLayout(anaWidget);
+        QBoxLayout *anaLayout = new QHBoxLayout(anaWidget);
         anaWidget->setLayout(anaLayout);
 
         QLabel *iconLabel = new QLabel;
@@ -1349,7 +1367,7 @@ void MainWindow::allMusicRead()
 
             player->play();
         });
-        playButton->setMaximumSize(QSize(100, 1287365));
+        playButton->setMaximumWidth(100);
         anaLayout->addWidget(playButton);
 
         item->setSizeHint(anaWidget->sizeHint());
