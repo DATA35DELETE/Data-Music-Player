@@ -742,6 +742,7 @@ void MainWindow::connectors()
         else
             nextMusic(true);
     });
+#ifdef WIN32
     connect(new QHotkey(QKeySequence(Qt::Key_MediaNext), true, this), &QHotkey::activated, this,
             [=](){
                 if(mod == 1)
@@ -755,7 +756,7 @@ void MainWindow::connectors()
                 else
                     nextMusic(true);
             });
-
+#endif
     connect(ui->musicBefore, &QPushButton::clicked, this,
     [=]()
     {
@@ -770,6 +771,7 @@ void MainWindow::connectors()
         else
             nextMusic(false);
     });
+#ifdef WIN32
     connect(new QHotkey(QKeySequence(Qt::Key_MediaPrevious), true, this), &QHotkey::activated, this,
             [=](){
                 if(mod == 1)
@@ -783,7 +785,7 @@ void MainWindow::connectors()
                 else
                     nextMusic(false);
             });
-
+#endif
     connect(card->musicCardAfter, &QPushButton::clicked, this,
             [=]()
             {
@@ -818,13 +820,46 @@ void MainWindow::connectors()
 #if defined(Q_OS_WIN)
     QHotkey *playPauseShortcut = new QHotkey(QKeySequence(Qt::Key_MediaPlay), true, this);
     QHotkey *playPauseShortcut2 = new QHotkey(QKeySequence(Qt::Key_MediaTogglePlayPause), true, this);
-#else
-    QHotkey *playPauseShortcut = new QHotkey(QKeySequence(Qt::Key_MediaPlay), true, this);
-    QHotkey *playPauseShortcut2 = new QHotkey(QKeySequence(Qt::Key_MediaTogglePlayPause), true, this);
-#endif
 
     connect(playPauseShortcut, &QHotkey::activated, this, &MainWindow::musicControl_clicked);
     connect(playPauseShortcut2, &QHotkey::activated, this, &MainWindow::musicControl_clicked);
+#else
+    mpris = new MprisPlayer(this);
+
+    if (!mpris->start())
+        qDebug() << "MPRIS başlatılamadı!";
+
+    connect(mpris, &MprisPlayer::playRequested,
+            this, &MainWindow::musicControl_clicked);
+
+    connect(mpris, &MprisPlayer::nextRequested,
+            this, [=](){
+        if(mod == 1)
+        {
+            mod = 0;
+
+            nextMusic(true);
+
+            mod = 1;
+        }
+        else
+            nextMusic(true);});
+
+    connect(mpris, &MprisPlayer::previousRequested,
+            this, [=](){
+                if(mod == 1)
+                {
+                    mod = 0;
+
+                    nextMusic(false);
+
+                    mod = 1;
+                }
+                else
+                    nextMusic(false);});
+
+#endif
+
 
     connect(ui->allMusicsList, &QListWidget::itemDoubleClicked, this,
     [=](QListWidgetItem* i){
@@ -1097,7 +1132,7 @@ void MainWindow::musicsRead()
         muzikYollariDir.setFilter(QDir::Filter::Files);
 
         for (auto ii : muzikYollariDir.entryList()) {
-            if(!ii.endsWith(".mp3"))
+            if(!(ii.endsWith(".opus") || ii.endsWith(".mp3") || ii.endsWith(".m4a")))
                 continue;
 
             if(!isPlaylists)
@@ -1114,47 +1149,110 @@ void MainWindow::musicsRead()
         return;
 
     for (auto i : musics) {
-        TagLib::MPEG::File file(TAGLIB_FILENAME(i));
-        if (!file.isValid()) {
-            qDebug() << "Hata: Geçersiz MP3 dosyası." << '\n';
-            return;
-        }
-
-        // 2. ID3v2 etiketini al (kapak resimleri sadece ID3v2'de bulunur)
-        TagLib::ID3v2::Tag* tag = file.ID3v2Tag();
-        if (!tag) {
-            qDebug() << "Hata: ID3v2 etiketi bulunamadı." << '\n';
-            return;
-        }
-
-        // 3. "APIC" (Attached Picture) çerçevelerini listele
-        TagLib::ID3v2::FrameList frames = tag->frameList("APIC");
-        if (frames.isEmpty()) {
-            continue;
-        }
-
-        // 4. İlk resim çerçevesini al (genellikle ön kapaktır)
-        auto* picFrame = dynamic_cast<TagLib::ID3v2::AttachedPictureFrame*>(frames.front());
-        if (!picFrame) {
-            return;
-        }
-
-        // 5. Görsel verisini al ve dosyaya yaz
-        TagLib::ByteVector imageData = picFrame->picture();
-
-        // QFileInfo(i).fileName().replace(".mp3",".jpeg").prepend("../thumbnails/")
-        QFile thumbnailsFotoFile("../tempImage");
-        if(thumbnailsFotoFile.open(QFile::OpenModeFlag::WriteOnly))
+        if(i.endsWith(".mp3"))
         {
-            thumbnailsFotoFile.write(imageData.data(), imageData.size());
+            TagLib::MPEG::File file(TAGLIB_FILENAME(i));
+            if (!file.isValid()) {
+                qDebug() << "Hata: Geçersiz MP3 dosyası." << '\n';
+                return;
+            }
+
+            // 2. ID3v2 etiketini al (kapak resimleri sadece ID3v2'de bulunur)
+            TagLib::ID3v2::Tag* tag = file.ID3v2Tag();
+            if (!tag) {
+                qDebug() << "Hata: ID3v2 etiketi bulunamadı." << '\n';
+                return;
+            }
+
+            // 3. "APIC" (Attached Picture) çerçevelerini listele
+            TagLib::ID3v2::FrameList frames = tag->frameList("APIC");
+            if (frames.isEmpty()) {
+                continue;
+            }
+
+            // 4. İlk resim çerçevesini al (genellikle ön kapaktır)
+            auto* picFrame = dynamic_cast<TagLib::ID3v2::AttachedPictureFrame*>(frames.front());
+            if (!picFrame) {
+                return;
+            }
+
+            // 5. Görsel verisini al ve dosyaya yaz
+            TagLib::ByteVector imageData = picFrame->picture();
+
+            // QFileInfo(i).fileName().replace(".mp3",".jpeg").prepend("../thumbnails/")
+            QFile thumbnailsFotoFile("../tempImage");
+            if(thumbnailsFotoFile.open(QFile::OpenModeFlag::WriteOnly))
+            {
+                thumbnailsFotoFile.write(imageData.data(), imageData.size());
+            }
+            thumbnailsFotoFile.close();
+
+            QImageReader rd("../tempImage");
+            rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
+            rd.setScaledSize(QSize(40, 40));
+
+            rd.read().save(QFileInfo(i).fileName().replace(".mp3",".jpeg").prepend("../thumbnails/"), "JPEG");
         }
-        thumbnailsFotoFile.close();
+        else if(i.endsWith(".opus"))
+        {
+            TagLib::Ogg::Opus::File file(TAGLIB_FILENAME(i));
 
-        QImageReader rd("../tempImage");
-        rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
-        rd.setScaledSize(QSize(40, 40));
+            if (file.isValid() && file.tag()) {
+                // Opus files use XiphComment for tags
+                TagLib::Ogg::XiphComment *tag = file.tag();
+                TagLib::List<TagLib::FLAC::Picture *> pictures = tag->pictureList();
 
-        rd.read().save(QFileInfo(i).fileName().replace(".mp3",".jpeg").prepend("../thumbnails/"), "JPEG");
+                if (!pictures.isEmpty()) {
+                    // Grab the first available picture (or filter by pictures[i]->type())
+                    TagLib::FLAC::Picture *pic = pictures.front();
+                    TagLib::ByteVector data = pic->data();
+
+                    QFile thumbnailsFotoFile("../tempImage");
+                    if(thumbnailsFotoFile.open(QFile::OpenModeFlag::WriteOnly))
+                    {
+                        thumbnailsFotoFile.write(data.data(), data.size());
+                    }
+                    thumbnailsFotoFile.close();
+
+                    QImageReader rd("../tempImage");
+                    rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
+                    rd.setScaledSize(QSize(40, 40));
+
+                    rd.read().save(QFileInfo(i).fileName().replace(".opus",".jpeg").prepend("../thumbnails/"), "JPEG");
+                }
+            }
+        }
+        else if(i.endsWith(".m4a"))
+        {
+            TagLib::MP4::File file(TAGLIB_FILENAME(i));
+
+            if (file.isValid() && file.tag()) {
+                TagLib::MP4::Tag *tag = file.tag();
+
+                // "covr" atomunu kontrol et (Eski TagLib sürümlerinde itemListMap() kullanılır)
+                if (tag->contains("covr")) {
+                    TagLib::MP4::CoverArtList coverList = tag->item("covr").toCoverArtList();
+
+                    if (!coverList.isEmpty()) {
+                        TagLib::MP4::CoverArt cover = coverList.front();
+                        TagLib::ByteVector data = cover.data();
+
+                        QFile thumbnailsFotoFile("../tempImage");
+                        if(thumbnailsFotoFile.open(QFile::OpenModeFlag::WriteOnly))
+                        {
+                            thumbnailsFotoFile.write(data.data(), data.size());
+                        }
+                        thumbnailsFotoFile.close();
+
+                        QImageReader rd("../tempImage");
+                        rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
+                        rd.setScaledSize(QSize(40, 40));
+
+                        rd.read().save(QFileInfo(i).fileName().replace(".m4a",".jpeg").prepend("../thumbnails/"), "JPEG");
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -1331,26 +1429,81 @@ void MainWindow::allMusicRead()
 
         QLabel *iconLabel = new QLabel;
         iconLabel->setScaledContents(true);
-        iconLabel->setMaximumSize(QSize(30, 30));
-        iconLabel->setMinimumSize(QSize(30, 30));
-        if(QFile(QFileInfo(musics.at(i)).fileName().replace(".mp3",".jpeg").prepend("../thumbnails/")).exists())
+        iconLabel->setMaximumSize(QSize(40, 40));
+        iconLabel->setMinimumSize(QSize(40, 40));
+        if(!isPlaylists && musics.at(i).endsWith(".mp3"))
         {
-            if(!isPlaylists)
+            if(QFile(QFileInfo(musics.at(i)).fileName().replace(".mp3",".jpeg").prepend("../thumbnails/")).exists())
+            {
                 iconLabel->setPixmap(QPixmap(QFileInfo(musics.at(i)).fileName().replace(".mp3",".jpeg").prepend("../thumbnails/")));
+            }
             else
-                iconLabel->setPixmap(QPixmap(QFileInfo(playlistsMusics.at(i)).fileName().replace(".mp3",".jpeg").prepend("../thumbnails/")));
+            {
+                configurer->setIcon(iconLabel, QString::fromUtf8(":/assets/icons/nota.svg"));
+            }
         }
-        else
+        if(isPlaylists && playlistsMusics.at(i).endsWith(".mp3"))
         {
-            configurer->setIcon(iconLabel, QString::fromUtf8(":/assets/icons/nota.svg"));
+            if(QFile(QFileInfo(playlistsMusics.at(i)).fileName().replace(".mp3",".jpeg").prepend("../thumbnails/")).exists())
+            {
+                iconLabel->setPixmap(QPixmap(QFileInfo(playlistsMusics.at(i)).fileName().replace(".mp3",".jpeg").prepend("../thumbnails/")));
+            }
+            else
+            {
+                configurer->setIcon(iconLabel, QString::fromUtf8(":/assets/icons/nota.svg"));
+            }
+        }
+        else if(!isPlaylists && musics.at(i).endsWith(".opus"))
+        {
+            if(QFile(QFileInfo(musics.at(i)).fileName().replace(".opus",".jpeg").prepend("../thumbnails/")).exists())
+            {
+                iconLabel->setPixmap(QPixmap(QFileInfo(musics.at(i)).fileName().replace(".opus",".jpeg").prepend("../thumbnails/")));
+            }
+            else
+            {
+                configurer->setIcon(iconLabel, QString::fromUtf8(":/assets/icons/nota.svg"));
+            }
+        }
+        else if(isPlaylists && playlistsMusics.at(i).endsWith(".opus"))
+        {
+            if(QFile(QFileInfo(playlistsMusics.at(i)).fileName().replace(".opus",".jpeg").prepend("../thumbnails/")).exists())
+            {
+                iconLabel->setPixmap(QPixmap(QFileInfo(playlistsMusics.at(i)).fileName().replace(".opus",".jpeg").prepend("../thumbnails/")));
+            }
+            else
+            {
+                configurer->setIcon(iconLabel, QString::fromUtf8(":/assets/icons/nota.svg"));
+            }
+        }
+        else if(!isPlaylists && musics.at(i).endsWith(".m4a"))
+        {
+            if(QFile(QFileInfo(musics.at(i)).fileName().replace(".m4a",".jpeg").prepend("../thumbnails/")).exists())
+            {
+                iconLabel->setPixmap(QPixmap(QFileInfo(musics.at(i)).fileName().replace(".m4a",".jpeg").prepend("../thumbnails/")));
+            }
+            else
+            {
+                configurer->setIcon(iconLabel, QString::fromUtf8(":/assets/icons/nota.svg"));
+            }
+        }
+        else if(isPlaylists && playlistsMusics.at(i).endsWith(".m4a"))
+        {
+            if(QFile(QFileInfo(playlistsMusics.at(i)).fileName().replace(".m4a",".jpeg").prepend("../thumbnails/")).exists())
+            {
+                iconLabel->setPixmap(QPixmap(QFileInfo(playlistsMusics.at(i)).fileName().replace(".m4a",".jpeg").prepend("../thumbnails/")));
+            }
+            else
+            {
+                configurer->setIcon(iconLabel, QString::fromUtf8(":/assets/icons/nota.svg"));
+            }
         }
         anaLayout->addWidget(iconLabel);
 
         QLabel *nameLabel = new QLabel;
         if(!isPlaylists)
-            nameLabel->setText(QFileInfo(musics.at(i)).fileName().remove(".mp3"));
+            nameLabel->setText(QFileInfo(musics.at(i)).fileName().remove(".mp3").remove(".opus").remove(".m4a"));
         else
-            nameLabel->setText(QFileInfo(playlistsMusics.at(i)).fileName().remove(".mp3"));
+            nameLabel->setText(QFileInfo(playlistsMusics.at(i)).fileName().remove(".mp3").remove(".opus").remove(".m4a"));
         nameLabel->setWordWrap(true);
         anaLayout->addWidget(nameLabel);
 
@@ -1390,44 +1543,107 @@ void MainWindow::player_mediaStatusChanged(QMediaPlayer::MediaStatus status)
     if(status != QMediaPlayer::MediaStatus::BufferedMedia)
         return;
 
-    TagLib::MPEG::File *file;
-
-    if(!isPlaylists)
+    if(!isPlaylists && musics.at(iMusic).endsWith(".mp3"))
     {
-        file = new TagLib::MPEG::File(TAGLIB_FILENAME(musics.at(iMusic)));
-        if (!file->isValid()) {
-            qDebug() << "Hata: Geçersiz MP3 dosyası." << '\n';
+        TagLib::MPEG::File file = TagLib::MPEG::File(TAGLIB_FILENAME(musics.at(iMusic)));
+
+            // 2. ID3v2 etiketini al (kapak resimleri sadece ID3v2'de bulunur)
+        TagLib::ID3v2::Tag* tag = file.ID3v2Tag();
+        if (!tag) {
+            qDebug() << "Hata: ID3v2 etiketi bulunamadı." << '\n';
             return;
         }
-    }
-    else
-    {
-        file = new TagLib::MPEG::File(TAGLIB_FILENAME(playlistsMusics.at(iMusic)));
-        if (!file->isValid()) {
-            qDebug() << "Hata: Geçersiz MP3 dosyası." << '\n';
-            return;
-        }
-    }
 
-        // 2. ID3v2 etiketini al (kapak resimleri sadece ID3v2'de bulunur)
-    TagLib::ID3v2::Tag* tag = file->ID3v2Tag();
-    if (!tag) {
-        qDebug() << "Hata: ID3v2 etiketi bulunamadı." << '\n';
-        return;
-    }
+            // 3. "APIC" (Attached Picture) çerçevelerini listele
+        TagLib::ID3v2::FrameList frames = tag->frameList("APIC");
+        if (frames.isEmpty()) {
+            if(!isMusicCard)
+                configurer->setIcon(ui->musicsThumbnails, QString::fromUtf8(":/assets/icons/nota.svg"));
+            else
+                configurer->setIcon(card->musicCardThumbnails, QString::fromUtf8(":/assets/icons/nota.svg"));
 
-        // 3. "APIC" (Attached Picture) çerçevelerini listele
-    TagLib::ID3v2::FrameList frames = tag->frameList("APIC");
-    if (frames.isEmpty()) {
-        if(!isMusicCard)
-            configurer->setIcon(ui->musicsThumbnails, QString::fromUtf8(":/assets/icons/nota.svg"));
-        else
-            configurer->setIcon(card->musicCardThumbnails, QString::fromUtf8(":/assets/icons/nota.svg"));
-
-        if(!isPlaylists)
             ui->musicsName->setText(QFileInfo(musics.at(iMusic)).fileName().remove(".mp3"));
+
+            ui->musicsAuthor->setText((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>());
+
+            int s = player->duration() / 1000;
+            int m = 0,h = 0;
+
+            while(s >= 60)
+            {
+                m++;
+
+                s -= 60;
+            }
+            while(m >= 60)
+            {
+                h++;
+
+                m -= 60;
+            }
+
+            QString prompt = "";
+
+            if(h < 10)
+                prompt.append("0");
+            prompt.append(QString::number(h)).append(":");
+            if(m < 10)
+                prompt.append("0");
+            prompt.append(QString::number(m)).append(":");
+            if(s < 10)
+                prompt.append("0");
+            prompt.append(QString::number(s));
+
+            ui->musicDuration->setText(prompt);
+
+            ui->allMusicsList->setCurrentRow(iMusic);
+
+            ui->statusbar->showMessage(QFileInfo(musics.at(iMusic)).fileName().remove(".mp3").append(" | ").append((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>()));
+
+            return;
+        }
+
+            // 4. İlk resim çerçevesini al (genellikle ön kapaktır)
+        auto* picFrame = dynamic_cast<TagLib::ID3v2::AttachedPictureFrame*>(frames.front());
+        if (!picFrame) {
+            return;
+        }
+
+            // 5. Görsel verisini al ve dosyaya yaz
+        TagLib::ByteVector imageData = picFrame->picture();
+
+            // QFileInfo(i).fileName().replace(".mp3",".jpeg").prepend("../thumbnails/")
+        QFile thumbnailsFotoFile("../tempImage2");
+        if(thumbnailsFotoFile.open(QFile::OpenModeFlag::WriteOnly))
+        {
+            thumbnailsFotoFile.write(imageData.data(), imageData.size());
+        }
+        thumbnailsFotoFile.close();
+
+        QImageReader rd("../tempImage2");
+        rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
+        rd.setScaledSize(QSize(200,200));
+
+        QImage readBoku = rd.read();
+
+        QPixmap yuvarlak(readBoku.size());
+        yuvarlak.fill(Qt::transparent);
+
+        QPainter cizici(&yuvarlak);
+        cizici.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+
+        QPainterPath ciziciPath;
+        ciziciPath.addRoundedRect(yuvarlak.rect(), 40, 40);
+
+        cizici.setClipPath(ciziciPath);
+        cizici.drawPixmap(0,0, QPixmap::fromImage(readBoku));
+
+        if(!isMusicCard)
+            ui->musicsThumbnails->setPixmap(yuvarlak);
         else
-            ui->musicsName->setText(QFileInfo(playlistsMusics.at(iMusic)).fileName().remove(".mp3"));
+            card->musicCardThumbnails->setPixmap(yuvarlak);
+
+        ui->musicsName->setText(QFileInfo(musics.at(iMusic)).fileName().remove(".mp3"));
 
         ui->musicsAuthor->setText((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>());
 
@@ -1461,107 +1677,679 @@ void MainWindow::player_mediaStatusChanged(QMediaPlayer::MediaStatus status)
 
         ui->musicDuration->setText(prompt);
 
-        if(!isPlaylists)
-            ui->allMusicsList->setCurrentRow(iMusic);
-        else
-            ui->listWidget->setCurrentRow(iMusic);
+        ui->allMusicsList->setCurrentRow(iMusic);
 
-        if(!isPlaylists)
-            ui->statusbar->showMessage(QFileInfo(musics.at(iMusic)).fileName().remove(".mp3").append(" | ").append((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>()));
-        else
+        ui->statusbar->showMessage(QFileInfo(musics.at(iMusic)).fileName().remove(".mp3").append(" | ").append((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>()));
+    }
+    if(isPlaylists && playlistsMusics.at(iMusic).endsWith(".mp3"))
+    {
+        TagLib::MPEG::File file = TagLib::MPEG::File(TAGLIB_FILENAME(playlistsMusics.at(iMusic)));
+
+        // 2. ID3v2 etiketini al (kapak resimleri sadece ID3v2'de bulunur)
+        TagLib::ID3v2::Tag* tag = file.ID3v2Tag();
+        if (!tag) {
+            qDebug() << "Hata: ID3v2 etiketi bulunamadı." << '\n';
+            return;
+        }
+
+        // 3. "APIC" (Attached Picture) çerçevelerini listele
+        TagLib::ID3v2::FrameList frames = tag->frameList("APIC");
+        if (frames.isEmpty()) {
+            if(!isMusicCard)
+                configurer->setIcon(ui->musicsThumbnails, QString::fromUtf8(":/assets/icons/nota.svg"));
+            else
+                configurer->setIcon(card->musicCardThumbnails, QString::fromUtf8(":/assets/icons/nota.svg"));
+
+            ui->musicsName->setText(QFileInfo(playlistsMusics.at(iMusic)).fileName().remove(".mp3"));
+
+            ui->musicsAuthor->setText((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>());
+
+            int s = player->duration() / 1000;
+            int m = 0,h = 0;
+
+            while(s >= 60)
+            {
+                m++;
+
+                s -= 60;
+            }
+            while(m >= 60)
+            {
+                h++;
+
+                m -= 60;
+            }
+
+            QString prompt = "";
+
+            if(h < 10)
+                prompt.append("0");
+            prompt.append(QString::number(h)).append(":");
+            if(m < 10)
+                prompt.append("0");
+            prompt.append(QString::number(m)).append(":");
+            if(s < 10)
+                prompt.append("0");
+            prompt.append(QString::number(s));
+
+            ui->musicDuration->setText(prompt);
+
+            ui->allMusicsList->setCurrentRow(iMusic);
+
             ui->statusbar->showMessage(QFileInfo(playlistsMusics.at(iMusic)).fileName().remove(".mp3").append(" | ").append((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>()));
 
-        delete file;
-
-        return;
-    }
+            return;
+        }
 
         // 4. İlk resim çerçevesini al (genellikle ön kapaktır)
-    auto* picFrame = dynamic_cast<TagLib::ID3v2::AttachedPictureFrame*>(frames.front());
-    if (!picFrame) {
-        return;
-    }
+        auto* picFrame = dynamic_cast<TagLib::ID3v2::AttachedPictureFrame*>(frames.front());
+        if (!picFrame) {
+            return;
+        }
 
         // 5. Görsel verisini al ve dosyaya yaz
-    TagLib::ByteVector imageData = picFrame->picture();
+        TagLib::ByteVector imageData = picFrame->picture();
 
         // QFileInfo(i).fileName().replace(".mp3",".jpeg").prepend("../thumbnails/")
-    QFile thumbnailsFotoFile("../tempImage2");
-    if(thumbnailsFotoFile.open(QFile::OpenModeFlag::WriteOnly))
-    {
-        thumbnailsFotoFile.write(imageData.data(), imageData.size());
-    }
-    thumbnailsFotoFile.close();
+        QFile thumbnailsFotoFile("../tempImage2");
+        if(thumbnailsFotoFile.open(QFile::OpenModeFlag::WriteOnly))
+        {
+            thumbnailsFotoFile.write(imageData.data(), imageData.size());
+        }
+        thumbnailsFotoFile.close();
 
-    QImageReader rd("../tempImage2");
-    rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
-    rd.setScaledSize(QSize(200,200));
+        QImageReader rd("../tempImage2");
+        rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
+        rd.setScaledSize(QSize(200,200));
 
-    QImage readBoku = rd.read();
+        QImage readBoku = rd.read();
 
-    QPixmap yuvarlak(readBoku.size());
-    yuvarlak.fill(Qt::transparent);
+        QPixmap yuvarlak(readBoku.size());
+        yuvarlak.fill(Qt::transparent);
 
-    QPainter cizici(&yuvarlak);
-    cizici.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+        QPainter cizici(&yuvarlak);
+        cizici.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
-    QPainterPath ciziciPath;
-    ciziciPath.addRoundedRect(yuvarlak.rect(), 40, 40);
+        QPainterPath ciziciPath;
+        ciziciPath.addRoundedRect(yuvarlak.rect(), 40, 40);
 
-    cizici.setClipPath(ciziciPath);
-    cizici.drawPixmap(0,0, QPixmap::fromImage(readBoku));
+        cizici.setClipPath(ciziciPath);
+        cizici.drawPixmap(0,0, QPixmap::fromImage(readBoku));
 
-    if(!isMusicCard)
-        ui->musicsThumbnails->setPixmap(yuvarlak);
-    else
-        card->musicCardThumbnails->setPixmap(yuvarlak);
+        if(!isMusicCard)
+            ui->musicsThumbnails->setPixmap(yuvarlak);
+        else
+            card->musicCardThumbnails->setPixmap(yuvarlak);
 
-    if(!isPlaylists)
         ui->musicsName->setText(QFileInfo(musics.at(iMusic)).fileName().remove(".mp3"));
-    else
-        ui->musicsName->setText(QFileInfo(playlistsMusics.at(iMusic)).fileName().remove(".mp3"));
-    ui->musicsAuthor->setText((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>());
 
-    int s = player->duration() / 1000;
-    int m = 0,h = 0;
+        ui->musicsAuthor->setText((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>());
 
-    while(s >= 60)
-    {
-        m++;
+        int s = player->duration() / 1000;
+        int m = 0,h = 0;
 
-        s -= 60;
-    }
-    while(m >= 60)
-    {
-        h++;
+        while(s >= 60)
+        {
+            m++;
 
-        m -= 60;
-    }
+            s -= 60;
+        }
+        while(m >= 60)
+        {
+            h++;
 
-    QString prompt = "";
+            m -= 60;
+        }
 
-    if(h < 10)
-        prompt.append("0");
-    prompt.append(QString::number(h)).append(":");
-    if(m < 10)
-        prompt.append("0");
-    prompt.append(QString::number(m)).append(":");
-    if(s < 10)
-        prompt.append("0");
-    prompt.append(QString::number(s));
+        QString prompt = "";
 
-    ui->musicDuration->setText(prompt);
+        if(h < 10)
+            prompt.append("0");
+        prompt.append(QString::number(h)).append(":");
+        if(m < 10)
+            prompt.append("0");
+        prompt.append(QString::number(m)).append(":");
+        if(s < 10)
+            prompt.append("0");
+        prompt.append(QString::number(s));
 
-    if(!isPlaylists)
+        ui->musicDuration->setText(prompt);
+
         ui->allMusicsList->setCurrentRow(iMusic);
-    else
-        ui->listWidget->setCurrentRow(iMusic);
-    if(!isPlaylists)
-        ui->statusbar->showMessage(QFileInfo(musics.at(iMusic)).fileName().remove(".mp3").append(" | ").append((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>()));
-    else
-        ui->statusbar->showMessage(QFileInfo(playlistsMusics.at(iMusic)).fileName().remove(".mp3").append(" | ").append((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>()));
 
-    delete file;
+        ui->statusbar->showMessage(QFileInfo(playlistsMusics.at(iMusic)).fileName().remove(".mp3").append(" | ").append((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>()));
+    }
+    else if(!isPlaylists && musics.at(iMusic).endsWith(".opus"))
+    {
+        TagLib::Ogg::Opus::File file(TAGLIB_FILENAME(musics.at(iMusic)));
+
+        if (file.isValid() && file.tag()) {
+            // Opus files use XiphComment for tags
+            TagLib::Ogg::XiphComment *tag = file.tag();
+            TagLib::List<TagLib::FLAC::Picture *> pictures = tag->pictureList();
+
+            if (!pictures.isEmpty()) {
+                // Grab the first available picture (or filter by pictures[i]->type())
+                TagLib::FLAC::Picture *pic = pictures.front();
+                TagLib::ByteVector data = pic->data();
+
+                QFile thumbnailsFotoFile("../tempImage2");
+                if(thumbnailsFotoFile.open(QFile::OpenModeFlag::WriteOnly))
+                {
+                    thumbnailsFotoFile.write(data.data(), data.size());
+                }
+                thumbnailsFotoFile.close();
+
+                QImageReader rd("../tempImage2");
+                rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
+                rd.setScaledSize(QSize(200,200));
+
+                QImage readBoku = rd.read();
+
+                QPixmap yuvarlak(readBoku.size());
+                yuvarlak.fill(Qt::transparent);
+
+                QPainter cizici(&yuvarlak);
+                cizici.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+
+                QPainterPath ciziciPath;
+                ciziciPath.addRoundedRect(yuvarlak.rect(), 40, 40);
+
+                cizici.setClipPath(ciziciPath);
+                cizici.drawPixmap(0,0, QPixmap::fromImage(readBoku));
+
+                if(!isMusicCard)
+                    ui->musicsThumbnails->setPixmap(yuvarlak);
+                else
+                    card->musicCardThumbnails->setPixmap(yuvarlak);
+
+                ui->musicsName->setText(QFileInfo(musics.at(iMusic)).fileName().remove(".opus"));
+
+                ui->musicsAuthor->setText((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>());
+
+                int s = player->duration() / 1000;
+                int m = 0,h = 0;
+
+                while(s >= 60)
+                {
+                    m++;
+
+                    s -= 60;
+                }
+                while(m >= 60)
+                {
+                    h++;
+
+                    m -= 60;
+                }
+
+                QString prompt = "";
+
+                if(h < 10)
+                    prompt.append("0");
+                prompt.append(QString::number(h)).append(":");
+                if(m < 10)
+                    prompt.append("0");
+                prompt.append(QString::number(m)).append(":");
+                if(s < 10)
+                    prompt.append("0");
+                prompt.append(QString::number(s));
+
+                ui->musicDuration->setText(prompt);
+
+                ui->allMusicsList->setCurrentRow(iMusic);
+
+                ui->statusbar->showMessage(QFileInfo(musics.at(iMusic)).fileName().remove(".opus").append(" | ").append((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>()));
+            }
+        }
+        else
+        {
+            qDebug() << musics.at(iMusic);
+
+            if(!isMusicCard)
+                configurer->setIcon(ui->musicsThumbnails, QString::fromUtf8(":/assets/icons/nota.svg"));
+            else
+                configurer->setIcon(card->musicCardThumbnails, QString::fromUtf8(":/assets/icons/nota.svg"));
+
+            ui->musicsName->setText(QFileInfo(musics.at(iMusic)).fileName().remove(".opus"));
+
+            ui->musicsAuthor->setText((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>());
+
+            int s = player->duration() / 1000;
+            int m = 0,h = 0;
+
+            while(s >= 60)
+            {
+                m++;
+
+                s -= 60;
+            }
+            while(m >= 60)
+            {
+                h++;
+
+                m -= 60;
+            }
+
+            QString prompt = "";
+
+            if(h < 10)
+                prompt.append("0");
+            prompt.append(QString::number(h)).append(":");
+            if(m < 10)
+                prompt.append("0");
+            prompt.append(QString::number(m)).append(":");
+            if(s < 10)
+                prompt.append("0");
+            prompt.append(QString::number(s));
+
+            ui->musicDuration->setText(prompt);
+
+            ui->allMusicsList->setCurrentRow(iMusic);
+
+            ui->statusbar->showMessage(QFileInfo(musics.at(iMusic)).fileName().remove(".opus").append(" | ").append((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>()));
+
+            return;
+        }
+    }
+    else if(isPlaylists && playlistsMusics.at(iMusic).endsWith(".opus"))
+    {
+        TagLib::Ogg::Opus::File file(TAGLIB_FILENAME(playlistsMusics.at(iMusic)));
+
+        if (file.isValid() && file.tag()) {
+            // Opus files use XiphComment for tags
+            TagLib::Ogg::XiphComment *tag = file.tag();
+            TagLib::List<TagLib::FLAC::Picture *> pictures = tag->pictureList();
+
+            if (!pictures.isEmpty()) {
+                // Grab the first available picture (or filter by pictures[i]->type())
+                TagLib::FLAC::Picture *pic = pictures.front();
+                TagLib::ByteVector data = pic->data();
+
+                QFile thumbnailsFotoFile("../tempImage2");
+                if(thumbnailsFotoFile.open(QFile::OpenModeFlag::WriteOnly))
+                {
+                    thumbnailsFotoFile.write(data.data(), data.size());
+                }
+                thumbnailsFotoFile.close();
+
+                QImageReader rd("../tempImage2");
+                rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
+                rd.setScaledSize(QSize(200,200));
+
+                QImage readBoku = rd.read();
+
+                QPixmap yuvarlak(readBoku.size());
+                yuvarlak.fill(Qt::transparent);
+
+                QPainter cizici(&yuvarlak);
+                cizici.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+
+                QPainterPath ciziciPath;
+                ciziciPath.addRoundedRect(yuvarlak.rect(), 40, 40);
+
+                cizici.setClipPath(ciziciPath);
+                cizici.drawPixmap(0,0, QPixmap::fromImage(readBoku));
+
+                if(!isMusicCard)
+                    ui->musicsThumbnails->setPixmap(yuvarlak);
+                else
+                    card->musicCardThumbnails->setPixmap(yuvarlak);
+
+                ui->musicsName->setText(QFileInfo(musics.at(iMusic)).fileName().remove(".opus"));
+
+                ui->musicsAuthor->setText((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>());
+
+                int s = player->duration() / 1000;
+                int m = 0,h = 0;
+
+                while(s >= 60)
+                {
+                    m++;
+
+                    s -= 60;
+                }
+                while(m >= 60)
+                {
+                    h++;
+
+                    m -= 60;
+                }
+
+                QString prompt = "";
+
+                if(h < 10)
+                    prompt.append("0");
+                prompt.append(QString::number(h)).append(":");
+                if(m < 10)
+                    prompt.append("0");
+                prompt.append(QString::number(m)).append(":");
+                if(s < 10)
+                    prompt.append("0");
+                prompt.append(QString::number(s));
+
+                ui->musicDuration->setText(prompt);
+
+                ui->listWidget->setCurrentRow(iMusic);
+
+                ui->statusbar->showMessage(QFileInfo(playlistsMusics.at(iMusic)).fileName().remove(".opus").append(" | ").append((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>()));
+            }
+        }
+        else
+        {
+            if(!isMusicCard)
+                configurer->setIcon(ui->musicsThumbnails, QString::fromUtf8(":/assets/icons/nota.svg"));
+            else
+                configurer->setIcon(card->musicCardThumbnails, QString::fromUtf8(":/assets/icons/nota.svg"));
+
+            ui->musicsName->setText(QFileInfo(playlistsMusics.at(iMusic)).fileName().remove(".opus"));
+
+            ui->musicsAuthor->setText((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>());
+
+            int s = player->duration() / 1000;
+            int m = 0,h = 0;
+
+            while(s >= 60)
+            {
+                m++;
+
+                s -= 60;
+            }
+            while(m >= 60)
+            {
+                h++;
+
+                m -= 60;
+            }
+
+            QString prompt = "";
+
+            if(h < 10)
+                prompt.append("0");
+            prompt.append(QString::number(h)).append(":");
+            if(m < 10)
+                prompt.append("0");
+            prompt.append(QString::number(m)).append(":");
+            if(s < 10)
+                prompt.append("0");
+            prompt.append(QString::number(s));
+
+            ui->musicDuration->setText(prompt);
+
+            ui->allMusicsList->setCurrentRow(iMusic);
+
+            ui->statusbar->showMessage(QFileInfo(playlistsMusics.at(iMusic)).fileName().remove(".opus").append(" | ").append((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>()));
+
+            return;
+        }
+    }
+    else if(!isPlaylists && musics.at(iMusic).endsWith(".m4a"))
+    {
+        TagLib::MP4::File file(TAGLIB_FILENAME(musics.at(iMusic)));
+
+        if (file.isValid() && file.tag()) {
+            TagLib::MP4::Tag *tag = file.tag();
+
+            // "covr" atomunu kontrol et (Eski TagLib sürümlerinde itemListMap() kullanılır)
+            if (tag->contains("covr")) {
+                TagLib::MP4::CoverArtList coverList = tag->item("covr").toCoverArtList();
+
+                if (!coverList.isEmpty()) {
+                    TagLib::MP4::CoverArt cover = coverList.front();
+                    TagLib::ByteVector data = cover.data();
+
+                    QFile thumbnailsFotoFile("../tempImage2");
+                    if(thumbnailsFotoFile.open(QFile::OpenModeFlag::WriteOnly))
+                    {
+                        thumbnailsFotoFile.write(data.data(), data.size());
+                    }
+                    thumbnailsFotoFile.close();
+
+                    QImageReader rd("../tempImage2");
+                    rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
+                    rd.setScaledSize(QSize(200,200));
+
+                    QImage readBoku = rd.read();
+
+                    QPixmap yuvarlak(readBoku.size());
+                    yuvarlak.fill(Qt::transparent);
+
+                    QPainter cizici(&yuvarlak);
+                    cizici.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+
+                    QPainterPath ciziciPath;
+                    ciziciPath.addRoundedRect(yuvarlak.rect(), 40, 40);
+
+                    cizici.setClipPath(ciziciPath);
+                    cizici.drawPixmap(0,0, QPixmap::fromImage(readBoku));
+
+                    if(!isMusicCard)
+                        ui->musicsThumbnails->setPixmap(yuvarlak);
+                    else
+                        card->musicCardThumbnails->setPixmap(yuvarlak);
+
+                    ui->musicsName->setText(QFileInfo(musics.at(iMusic)).fileName().remove(".m4a"));
+
+                    ui->musicsAuthor->setText((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>());
+
+                    int s = player->duration() / 1000;
+                    int m = 0,h = 0;
+
+                    while(s >= 60)
+                    {
+                        m++;
+
+                        s -= 60;
+                    }
+                    while(m >= 60)
+                    {
+                        h++;
+
+                        m -= 60;
+                    }
+
+                    QString prompt = "";
+
+                    if(h < 10)
+                        prompt.append("0");
+                    prompt.append(QString::number(h)).append(":");
+                    if(m < 10)
+                        prompt.append("0");
+                    prompt.append(QString::number(m)).append(":");
+                    if(s < 10)
+                        prompt.append("0");
+                    prompt.append(QString::number(s));
+
+                    ui->musicDuration->setText(prompt);
+
+                    ui->allMusicsList->setCurrentRow(iMusic);
+
+                    ui->statusbar->showMessage(QFileInfo(musics.at(iMusic)).fileName().remove(".m4a").append(" | ").append((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>()));
+                }
+            }
+
+            else
+            {
+                if(!isMusicCard)
+                    configurer->setIcon(ui->musicsThumbnails, QString::fromUtf8(":/assets/icons/nota.svg"));
+                else
+                    configurer->setIcon(card->musicCardThumbnails, QString::fromUtf8(":/assets/icons/nota.svg"));
+
+                ui->musicsName->setText(QFileInfo(musics.at(iMusic)).fileName().remove(".m4a"));
+
+                ui->musicsAuthor->setText((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>());
+
+                int s = player->duration() / 1000;
+                int m = 0,h = 0;
+
+                while(s >= 60)
+                {
+                    m++;
+
+                    s -= 60;
+                }
+                while(m >= 60)
+                {
+                    h++;
+
+                    m -= 60;
+                }
+
+                QString prompt = "";
+
+                if(h < 10)
+                    prompt.append("0");
+                prompt.append(QString::number(h)).append(":");
+                if(m < 10)
+                    prompt.append("0");
+                prompt.append(QString::number(m)).append(":");
+                if(s < 10)
+                    prompt.append("0");
+                prompt.append(QString::number(s));
+
+                ui->musicDuration->setText(prompt);
+
+                ui->allMusicsList->setCurrentRow(iMusic);
+
+                ui->statusbar->showMessage(QFileInfo(musics.at(iMusic)).fileName().remove(".m4a").append(" | ").append((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>()));
+
+                return;
+            }
+        }
+    }
+    else if(isPlaylists && playlistsMusics.at(iMusic).endsWith(".m4a"))
+    {
+        TagLib::MP4::File file(TAGLIB_FILENAME(playlistsMusics.at(iMusic)));
+
+        if (file.isValid() && file.tag()) {
+            TagLib::MP4::Tag *tag = file.tag();
+
+            // "covr" atomunu kontrol et (Eski TagLib sürümlerinde itemListMap() kullanılır)
+            if (tag->contains("covr")) {
+                TagLib::MP4::CoverArtList coverList = tag->item("covr").toCoverArtList();
+
+                if (!coverList.isEmpty()) {
+                    TagLib::MP4::CoverArt cover = coverList.front();
+                    TagLib::ByteVector data = cover.data();
+
+                    QFile thumbnailsFotoFile("../tempImage2");
+                    if(thumbnailsFotoFile.open(QFile::OpenModeFlag::WriteOnly))
+                    {
+                        thumbnailsFotoFile.write(data.data(), data.size());
+                    }
+                    thumbnailsFotoFile.close();
+
+                    QImageReader rd("../tempImage2");
+                    rd.setClipRect(QRect((rd.size().width() - rd.size().height()) / 2, 0,rd.size().height(),rd.size().height()));
+                    rd.setScaledSize(QSize(200,200));
+
+                    QImage readBoku = rd.read();
+
+                    QPixmap yuvarlak(readBoku.size());
+                    yuvarlak.fill(Qt::transparent);
+
+                    QPainter cizici(&yuvarlak);
+                    cizici.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+
+                    QPainterPath ciziciPath;
+                    ciziciPath.addRoundedRect(yuvarlak.rect(), 40, 40);
+
+                    cizici.setClipPath(ciziciPath);
+                    cizici.drawPixmap(0,0, QPixmap::fromImage(readBoku));
+
+                    if(!isMusicCard)
+                        ui->musicsThumbnails->setPixmap(yuvarlak);
+                    else
+                        card->musicCardThumbnails->setPixmap(yuvarlak);
+
+                    ui->musicsName->setText(QFileInfo(playlistsMusics.at(iMusic)).fileName().remove(".m4a"));
+
+                    ui->musicsAuthor->setText((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>());
+
+                    int s = player->duration() / 1000;
+                    int m = 0,h = 0;
+
+                    while(s >= 60)
+                    {
+                        m++;
+
+                        s -= 60;
+                    }
+                    while(m >= 60)
+                    {
+                        h++;
+
+                        m -= 60;
+                    }
+
+                    QString prompt = "";
+
+                    if(h < 10)
+                        prompt.append("0");
+                    prompt.append(QString::number(h)).append(":");
+                    if(m < 10)
+                        prompt.append("0");
+                    prompt.append(QString::number(m)).append(":");
+                    if(s < 10)
+                        prompt.append("0");
+                    prompt.append(QString::number(s));
+
+                    ui->musicDuration->setText(prompt);
+
+                    ui->listWidget->setCurrentRow(iMusic);
+
+                    ui->statusbar->showMessage(QFileInfo(playlistsMusics.at(iMusic)).fileName().remove(".m4a").append(" | ").append((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>()));
+                }
+            }
+            else
+            {
+                if(!isMusicCard)
+                    configurer->setIcon(ui->musicsThumbnails, QString::fromUtf8(":/assets/icons/nota.svg"));
+                else
+                    configurer->setIcon(card->musicCardThumbnails, QString::fromUtf8(":/assets/icons/nota.svg"));
+
+                ui->musicsName->setText(QFileInfo(playlistsMusics.at(iMusic)).fileName().remove(".m4a"));
+
+                ui->musicsAuthor->setText((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>());
+
+                int s = player->duration() / 1000;
+                int m = 0,h = 0;
+
+                while(s >= 60)
+                {
+                    m++;
+
+                    s -= 60;
+                }
+                while(m >= 60)
+                {
+                    h++;
+
+                    m -= 60;
+                }
+
+                QString prompt = "";
+
+                if(h < 10)
+                    prompt.append("0");
+                prompt.append(QString::number(h)).append(":");
+                if(m < 10)
+                    prompt.append("0");
+                prompt.append(QString::number(m)).append(":");
+                if(s < 10)
+                    prompt.append("0");
+                prompt.append(QString::number(s));
+
+                ui->musicDuration->setText(prompt);
+
+                ui->listWidget->setCurrentRow(iMusic);
+
+                ui->statusbar->showMessage(QFileInfo(playlistsMusics.at(iMusic)).fileName().remove(".m4a").append(" | ").append((player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>().isEmpty()) ? QString("Belirtilmemiş") : player->metaData().value(QMediaMetaData::ContributingArtist).value<QString>()));
+
+                return;
+            }
+        }
+    }
 }
 void MainWindow::player_positionChanged(qint64 position)
 {
@@ -2391,9 +3179,16 @@ void MainWindow::medyaIndirme(QString url)
              << "--cookies" << "cookies.txt"
              << "--ffmpeg-location" << "..\\ffmpeg\\ffmpeg-n9.0-latest-win64-lgpl-9.0\\bin"
              << "-f" << "bestaudio/best"
-             << "-x"
-             << "--audio-format" << "mp3"
-             << "--audio-quality" << "0"
+             << "-x";
+
+        if(ui->musicDownloadFormat->currentIndex() == 0)
+            args << "--audio-format" << "opus";
+        else if(ui->musicDownloadFormat->currentIndex() == 1)
+            args << "--audio-format" << "m4a";
+        else if(ui->musicDownloadFormat->currentIndex() == 2)
+            args << "--audio-format" << "mp3";
+
+        args << "--audio-quality" << "0"
              << "--embed-thumbnail"
              << "--add-metadata"
              << "-P" << "..\\downloads"
@@ -2407,9 +3202,16 @@ void MainWindow::medyaIndirme(QString url)
         args << "--js-runtimes" << "node"
              << "--cookies" << "cookies.txt"
              << "-f" << "bestaudio/best"
-             << "-x"
-             << "--audio-format" << "mp3"
-             << "--audio-quality" << "0"
+             << "-x";
+
+        if(ui->musicDownloadFormat->currentIndex() == 0)
+            args << "--audio-format" << "opus";
+        else if(ui->musicDownloadFormat->currentIndex() == 1)
+            args << "--audio-format" << "m4a";
+        else if(ui->musicDownloadFormat->currentIndex() == 2)
+            args << "--audio-format" << "mp3";
+
+        args << "--audio-quality" << "0"
              << "--embed-thumbnail"
              << "--add-metadata"
              << "-P" << "../downloads"
@@ -2428,10 +3230,12 @@ void MainWindow::musicDownloadControl()
     {
         ui->musicDownloadUrl->setEnabled(true);
         ui->downloadButton->setEnabled(true);
+        ui->musicDownloadFormat->setEnabled(true);
     }
     else
     {
         ui->musicDownloadUrl->setEnabled(false);
         ui->downloadButton->setEnabled(false);
+        ui->musicDownloadFormat->setEnabled(true);
     }
 }

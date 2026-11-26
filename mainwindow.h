@@ -28,14 +28,21 @@
 
 #include <qhotkey.h>
 
-#include <taglib/mpegfile.h>
-#include <taglib/id3v2tag.h>
-#include <taglib/attachedpictureframe.h>
+#include <mpegfile.h>
+#include <id3v2tag.h>
+#include <attachedpictureframe.h>
+#include <opusfile.h>
+#include <xiphcomment.h>
+#include <flacpicture.h>
+#include <mp4file.h>
+#include <mp4tag.h>
+#include <mp4coverart.h>
 
 #include "musiccard.h"
 #include "musicremove.h"
 #include "playlistadd.h"
 #include "about.h"
+#include "mprisplayer.h"
 
 #include <cstdio>
 
@@ -118,5 +125,8 @@ public slots:
     void ffmpegDownload_clicked();
 
     //void ayarlariKaydet_clicked();
+
+private:
+    MprisPlayer *mpris;
 };
 #endif // MAINWINDOW_H
