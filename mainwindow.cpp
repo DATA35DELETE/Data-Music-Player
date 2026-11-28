@@ -35,6 +35,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     ui->allMusicsList->setUniformItemSizes(true);
+    ui->playlistsList->setUniformItemSizes(true);
+    ui->listWidget->setUniformItemSizes(true);
 
     QSettings settFile("./config.ini", QSettings::IniFormat);
     if(settFile.value("autoThemeUpdate").isNull())
