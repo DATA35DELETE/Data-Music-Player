@@ -375,7 +375,7 @@
       <widget class="QWidget" name="homePage">
        <layout class="QGridLayout" name="gridLayout_3">
         <item row="1" column="0">
-         <widget class="QTextEdit" name="textEdit">
+         <widget class="QTextEdit" name="changelog">
           <property name="readOnly">
            <bool>true</bool>
           </property>

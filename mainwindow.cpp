@@ -34,6 +34,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    loadChangelog();
+
     ui->allMusicsList->setUniformItemSizes(true);
     ui->playlistsList->setUniformItemSizes(true);
     ui->listWidget->setUniformItemSizes(true);
@@ -3240,4 +3242,17 @@ void MainWindow::musicDownloadControl()
         ui->downloadButton->setEnabled(false);
         ui->musicDownloadFormat->setEnabled(true);
     }
+}
+
+// Changelog.md
+
+void MainWindow::loadChangelog()
+{
+    mngr = new QNetworkAccessManager(this);
+    connect(mngr, &QNetworkAccessManager::finished, this,
+    [=](QNetworkReply* nr){
+        ui->changelog->setMarkdown(QString(nr->readAll()));
+    });
+
+    mngr->get(QNetworkRequest(QUrl("https://raw.githubusercontent.com/DATA35DELETE/Data-Music-Player/refs/heads/main/Changelog.md")));
 }

@@ -97,6 +97,8 @@ public:
 
     void musicDownloadControl();
 
+    void loadChangelog();
+
     Ui::MainWindow *ui;
     musicCard *card;
     musicremove *remove;
