@@ -1,5 +1,7 @@
 # Data Music Player 1.2v : Opus and AAC Update
 
+---
+
 ### ✨ Eklenenler
 - **Medya Silme Desteği (`musicremove`):** Kütüphane dizinlerindeki ses dosyalarını listeleyip arayabilen, çoklu seçimle seçilen parçaları kütüphaneden/diskten kaldırabilen yeni medya silme penceresi eklendi.
 - **Opus ve AAC (`.m4a`) Desteği:**
